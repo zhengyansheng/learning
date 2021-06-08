@@ -1,6 +1,14 @@
-# learning
+# 技术者的学习路线
 
-> 技术人的学习路线
+**心得**
+
+先，看序，了解大纲；
+
+然后，针对某一章单独学习，反复练习；
+
+最后，学习方法论；
+
+
 
 
 
@@ -8,7 +16,7 @@
 
 
 
-![Go](/Users/zhengyansheng/go/src/github.com/zhengyansheng/learning/imgs/Go.png)
+![Go](./imgs/Go.png)
 
 
 
