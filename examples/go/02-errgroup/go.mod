@@ -1,4 +1,4 @@
-module github.com/zhengyansheng/learning/examples/go/waitgroup/v2
+module github.com/zhengyansheng/learning/examples/go/02-errgroup
 
 go 1.17
 
