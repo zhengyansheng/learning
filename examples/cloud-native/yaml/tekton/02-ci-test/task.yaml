@@ -1,0 +1,36 @@
+apiVersion: tekton.dev/v1beta1
+kind: Task
+metadata:
+  name: task-ci
+spec:
+  steps:
+    - name: git-clone
+      image: ubuntu
+      command:
+        - echo
+      args:
+        - "git clone"
+    - name: junit-tests
+      image: ubuntu
+      command:
+        - echo
+      args:
+        - "junit-tests"
+    - name: sonarqube
+      image: ubuntu
+      command:
+        - echo
+      args:
+        - "sonarqube"
+    - name: maven
+      image: ubuntu
+      command:
+        - echo
+      args:
+        - "maven"
+    - name: build-and-push-image
+      image: ubuntu
+      command:
+        - echo
+      args:
+        - "build-and-push-image"
