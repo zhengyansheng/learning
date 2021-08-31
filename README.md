@@ -10,17 +10,30 @@
 
 ![Gin](./imgs/Gin.png)
 
-
 ## 3. Python
+
 
 
 ## 4. 数据结构
 
 
+
 ## 5. DevOps 
 
 
+
 ## 6. 云原生 
+
+### 1. CNCF
+
+![](imgs/Cloud%20Native%20%E4%BA%91%E5%8E%9F%E7%94%9F.png)
+
+
+
+### 2. Git ops
+
+![image-20210901075501217](imgs/image-20210901075501217.png)
+
 
 
 ## 7. 架构
