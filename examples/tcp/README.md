@@ -172,7 +172,7 @@ TCP 是按Seq序列号接收数据的
 
 #### 3. 为什么握手要三次而不是二次
 
-因为IO通信是双向的
+因为TCP是全双工的，任意一方都可以发送和接收数据。
 
 站在客户端一方来看，客户端发送SYN，并得到服务端回复了ACK，此时表示客户端的输入和输出都是通的。
 
@@ -182,9 +182,27 @@ TCP 是按Seq序列号接收数据的
 
 
 
+#### 4. 为什么挥手是四次而不是三次
+
+假设： Client -> Server
+
+因为TCP是可靠的，Client发送FIN报文，必须收到Server回复了ACK，才算可靠的，否则Client就要一直发送FIN报文，直到收到Server回复了ACK
 
 
 
+**如果四次挥手，改成三次，把中间的第二，三次合并成一次，是否可行**
+
+首先第二次挥手是Server回复ACK，第三次挥手是Server发送FIN报文
+
+
+
+- 先来解释 为什么要有第二次挥手和第三次发送FIN
+
+第二次挥手，是因为Client发送了FIN请求，要断开连接，Server必须回复ACK，但是此时Server端可能还有未处理的数据，等Server端数据处理完成，发送FIN请求断开连接，此处处于LAST_ACK状态，等待Client回复ACK，此时Server处于CLOSE状态。
+
+
+
+如果把第二次的ACK和第三次的FIN合并，会导致Client接收到Server回复ACK延迟(因为Server要处理断开后要处理的数据)，Client没有收到ACK，会再次发送FIN
 
 ## 2. HTTP
 
