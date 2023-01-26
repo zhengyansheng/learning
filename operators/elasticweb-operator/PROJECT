@@ -1,0 +1,16 @@
+domain: zhengyansheng.com
+layout:
+- go.kubebuilder.io/v3
+projectName: elasticweb-operator
+repo: github.com/zhengyansheng/sample-operator/elasticweb-operator
+resources:
+- api:
+    crdVersion: v1
+    namespaced: true
+  controller: true
+  domain: zhengyansheng.com
+  group: elasticweb
+  kind: ElasticWeb
+  path: github.com/zhengyansheng/sample-operator/elasticweb-operator/api/v1
+  version: v1
+version: "3"

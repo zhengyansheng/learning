@@ -1,0 +1,16 @@
+apiVersion: elasticweb.zhengyansheng.com/v1
+kind: ElasticWeb
+metadata:
+  labels:
+    app.kubernetes.io/name: elasticweb
+    app.kubernetes.io/instance: elasticweb-sample
+    app.kubernetes.io/part-of: elasticweb-operator
+    app.kubernetes.io/managed-by: kustomize
+    app.kubernetes.io/created-by: elasticweb-operator
+  name: elasticweb-sample
+spec:
+  # TODO(user): Add fields here
+  image: tomcat:8.0.18-jre8
+  port: 30003
+  singlePodQPS: 600
+  totalQPS: 1100

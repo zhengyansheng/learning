@@ -1,0 +1,33 @@
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  creationTimestamp: null
+  name: manager-role
+rules:
+- apiGroups:
+  - apps.zhengyansheng.com
+  resources:
+  - nginxes
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - apps.zhengyansheng.com
+  resources:
+  - nginxes/finalizers
+  verbs:
+  - update
+- apiGroups:
+  - apps.zhengyansheng.com
+  resources:
+  - nginxes/status
+  verbs:
+  - get
+  - patch
+  - update

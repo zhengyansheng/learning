@@ -1,0 +1,31 @@
+# permissions for end users to edit elasticwebs.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  labels:
+    app.kubernetes.io/name: clusterrole
+    app.kubernetes.io/instance: elasticweb-editor-role
+    app.kubernetes.io/component: rbac
+    app.kubernetes.io/created-by: elasticweb-operator
+    app.kubernetes.io/part-of: elasticweb-operator
+    app.kubernetes.io/managed-by: kustomize
+  name: elasticweb-editor-role
+rules:
+- apiGroups:
+  - elasticweb.zhengyansheng.com
+  resources:
+  - elasticwebs
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - elasticweb.zhengyansheng.com
+  resources:
+  - elasticwebs/status
+  verbs:
+  - get

@@ -1,0 +1,31 @@
+# permissions for end users to edit nginxes.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  labels:
+    app.kubernetes.io/name: clusterrole
+    app.kubernetes.io/instance: nginx-editor-role
+    app.kubernetes.io/component: rbac
+    app.kubernetes.io/created-by: nginx-operator
+    app.kubernetes.io/part-of: nginx-operator
+    app.kubernetes.io/managed-by: kustomize
+  name: nginx-editor-role
+rules:
+- apiGroups:
+  - apps.zhengyansheng.com
+  resources:
+  - nginxes
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - apps.zhengyansheng.com
+  resources:
+  - nginxes/status
+  verbs:
+  - get
