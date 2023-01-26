@@ -1,5 +1,3 @@
-# 学习路线
-
 ## 1. Golang
 
 ![Go](./imgs/Go.png)
