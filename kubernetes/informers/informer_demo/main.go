@@ -45,7 +45,7 @@ func main() {
 	// 2. 向 factory 注册 各种Informer, 比如： podInformer
 	podInformer := factory.Core().V1().Pods()
 	sharedIndexInformer := podInformer.Informer()
-	// 注册回调函数
+	// 注册回调函数 （ADD,UPDATE,DELETE）
 	sharedIndexInformer.AddEventHandler(cache.ResourceEventHandlerFuncs{
 		AddFunc: func(obj interface{}) {
 			switch obj.(type) {
@@ -115,7 +115,7 @@ func main() {
 		},
 	})
 	
-	// 3. 启动 factory
+	// 3. 启动 factory ( list and watch )
 	stopCh := make(chan struct{})
 	factory.Start(stopCh)
 	defer close(stopCh)
