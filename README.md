@@ -1,7 +1,3 @@
-# learning
-kubernetes and go
-
-
 ## kubernetes
 
 `client-go 常见客户端`
@@ -14,7 +10,9 @@ kubernetes and go
 
 `Informer`
 - ListAndWatch
-- Informer
+- Informer factory
+  - gvc
+  - ...
 - Indexer
 
 `operators`
