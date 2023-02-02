@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"path/filepath"
 	"time"
-	
+
 	appsv1 "k8s.io/api/apps/v1"
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/labels"
@@ -28,24 +28,25 @@ func main() {
 		kubeconfig = flag.String("kubeconfig", "", "absolute path to the kubeconfig file")
 	}
 	flag.Parse()
-	
+
 	config, err := clientcmd.BuildConfigFromFlags("", *kubeconfig)
 	if err != nil {
 		panic(err)
 	}
-	
+
 	clientSet, err := kubernetes.NewForConfig(config)
 	if err != nil {
 		panic(err)
 	}
-	
-	// 1. 创建 informer 工厂
+
+	// 1. 实例化 informer factory
 	factory := informers.NewSharedInformerFactory(clientSet, defaultResync)
-	
+
 	// 2. 向 factory 注册 各种Informer, 比如： podInformer
 	podInformer := factory.Core().V1().Pods()
+
 	sharedIndexInformer := podInformer.Informer()
-	// 注册回调函数 （ADD,UPDATE,DELETE）
+	// 添加事件回调函数 （ADD,UPDATE,DELETE）
 	sharedIndexInformer.AddEventHandler(cache.ResourceEventHandlerFuncs{
 		AddFunc: func(obj interface{}) {
 			switch obj.(type) {
@@ -78,7 +79,7 @@ func main() {
 			}
 		},
 	})
-	
+
 	deploymentInformer := factory.Apps().V1().Deployments()
 	sharedIndexInformer2 := deploymentInformer.Informer()
 	// 注册回调函数
@@ -114,17 +115,17 @@ func main() {
 			}
 		},
 	})
-	
-	// 3. 启动 factory ( list and watch )
+
+	// 3. 启动 所有注册到factory到informers ( list and watch )
 	stopCh := make(chan struct{})
-	factory.Start(stopCh)
 	defer close(stopCh)
-	
+	factory.Start(stopCh)
+
 	// 4. 等待所有的informer同步完成
 	factory.WaitForCacheSync(stopCh)
-	
+
 	fmt.Println("====================从Indexer缓存中读取数据=============================")
-	// pod
+	// pod index
 	podLister := podInformer.Lister()
 	pods, err := podLister.Pods(apiv1.NamespaceDefault).List(labels.Everything())
 	if err != nil {
@@ -133,7 +134,7 @@ func main() {
 	for i, pod := range pods {
 		fmt.Printf("[i: %v -> pod], name: %v, namespace: %v\n", i, pod.Name, pod.Namespace)
 	}
-	
+
 	// deployment
 	deploymentLister := deploymentInformer.Lister()
 	deployments, err := deploymentLister.Deployments(apiv1.NamespaceDefault).List(labels.Everything())

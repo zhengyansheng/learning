@@ -56,7 +56,7 @@ func main() {
 	_ = indexer.Add(pod2)
 	_ = indexer.Add(pod3)
 
-	fmt.Println("当前所有objet key", indexer.ListKeys())              // ["default/pod1", "default/pod2", "kube-system/pod3"]
+	fmt.Println("当前所有object key", indexer.ListKeys())             // ["default/pod1", "default/pod2", "kube-system/pod3"]
 	fmt.Println(indexer.IndexKeys(NamespaceIndexName, "default")) // ["default/pod1", "default/pod2"]
 
 	fmt.Println("==============ByIndex============")
@@ -85,4 +85,9 @@ func main() {
 //	 	node1: set["default/pod4","kube-system/pod5"],
 //		node2: set["ingress-nginx/pod6","default/pod7"],
 //	  }
+//}
+
+//Index: {
+//	default: set["default/pod1","default/pod2"],
+//	kube-system: set["kube-system/pod3"]
 //}

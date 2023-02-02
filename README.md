@@ -15,6 +15,7 @@ kubernetes and go
 `Informer`
 - ListAndWatch
 - Informer
+- Indexer
 
 `operators`
 - nginx operator
