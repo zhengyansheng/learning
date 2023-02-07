@@ -15,6 +15,9 @@
   - ...
 - Indexer
 
+`Controller`
+- controller(workqueue, indexer, informer)
+
 `operators`
 - nginx operator
 - elasticweb operator
