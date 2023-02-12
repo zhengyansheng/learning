@@ -28,3 +28,8 @@
 ### 常见问题
 
 - [Informer 为什么要引入 Resync 机制]
+
+
+## Go
+
+### sync
