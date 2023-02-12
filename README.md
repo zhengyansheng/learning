@@ -1,7 +1,5 @@
 ## kubernetes
 
-
-### 大纲
 `client-go 常见客户端`
 - ClientSet
 - DynamicClient
@@ -32,4 +30,4 @@
 
 ## Go
 
-### sync
+`sync`
