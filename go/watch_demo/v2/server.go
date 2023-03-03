@@ -36,11 +36,8 @@ func Watch(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func init() {
-	go Production()
-}
-
 func main() {
+	go Production()
 	http.HandleFunc("/watch", Watch)
 	fmt.Printf("listen addr: %v\n", addr)
 	log.Fatal(http.ListenAndServe(addr, nil))
