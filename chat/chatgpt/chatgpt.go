@@ -34,12 +34,12 @@ func NewGPT(apiAuthTokens []string, opts ...Option) *chatGPT {
 }
 
 func (g *chatGPT) Request(content string) (string, error) {
-	ctx, cancel := context.WithTimeout(context.Background(), time.Second*10)
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second*30)
 	defer cancel()
 	resp, err := g.Client.CreateChatCompletion(
 		ctx,
 		openai.ChatCompletionRequest{
-			Model: openai.GPT3Dot5Turbo,
+			Model: g.Model,
 			Messages: []openai.ChatCompletionMessage{
 				{
 					Role:    openai.ChatMessageRoleUser,
