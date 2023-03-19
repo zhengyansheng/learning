@@ -9,8 +9,10 @@ import (
 )
 
 type chatGPT struct {
-	Client *openai.Client
-	Model  string `json:"model"`
+	client   *openai.Client
+	model    string
+	timeout  time.Duration
+	proxyUrl string
 }
 
 // Option FUNCTIONAL OPTIONS
@@ -18,14 +20,27 @@ type Option func(c *chatGPT)
 
 func WithModel(model string) Option {
 	return func(c *chatGPT) {
-		c.Model = model
+		c.model = model
+	}
+}
+
+func WithTimeout(timeout int) Option {
+	return func(c *chatGPT) {
+		c.timeout = time.Second * time.Duration(timeout)
+	}
+}
+
+func WithProxyUrl(proxyUrl string) Option {
+	return func(c *chatGPT) {
+		c.proxyUrl = proxyUrl
 	}
 }
 
 func NewGPT(apiAuthTokens []string, opts ...Option) *chatGPT {
 	chat := &chatGPT{
-		Model:  openai.GPT3Dot5Turbo,                                           // 提供一个默认值
-		Client: openai.NewClient(apiAuthTokens[rand.Intn(len(apiAuthTokens))]), // 随机token
+		model:   openai.GPT3Dot5Turbo,                                           // 提供一个默认值
+		client:  openai.NewClient(apiAuthTokens[rand.Intn(len(apiAuthTokens))]), // 随机token
+		timeout: time.Second * 30,                                               // 默认超时30秒
 	}
 	for _, opt := range opts {
 		opt(chat)
@@ -33,13 +48,13 @@ func NewGPT(apiAuthTokens []string, opts ...Option) *chatGPT {
 	return chat
 }
 
-func (g *chatGPT) Request(content string) (string, error) {
-	ctx, cancel := context.WithTimeout(context.Background(), time.Second*30)
+func (c *chatGPT) Request(content string) (string, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), c.timeout)
 	defer cancel()
-	resp, err := g.Client.CreateChatCompletion(
+	resp, err := c.client.CreateChatCompletion(
 		ctx,
 		openai.ChatCompletionRequest{
-			Model: g.Model,
+			Model: c.model,
 			Messages: []openai.ChatCompletionMessage{
 				{
 					Role:    openai.ChatMessageRoleUser,
