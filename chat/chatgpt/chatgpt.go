@@ -4,15 +4,14 @@ import (
 	"context"
 	"math/rand"
 	"time"
-	
+
 	openai "github.com/sashabaranov/go-openai"
 )
 
 type chatGPT struct {
-	client   *openai.Client
-	model    string
-	timeout  time.Duration
-	proxyUrl string
+	client  *openai.Client
+	model   string
+	timeout time.Duration
 }
 
 // Option FUNCTIONAL OPTIONS
@@ -30,10 +29,17 @@ func WithTimeout(timeout int) Option {
 	}
 }
 
-func WithProxyUrl(proxyUrl string) Option {
-	return func(c *chatGPT) {
-		c.proxyUrl = proxyUrl
+// DefaultSystemChatCompletionMessage chat role: system
+func DefaultSystemChatCompletionMessage() openai.ChatCompletionMessage {
+	return openai.ChatCompletionMessage{
+		Role:    openai.ChatMessageRoleSystem,
+		Content: "你是一个AI助手，我需要你模拟一名拥有15年经验的DBA工程师来回答我的问题",
 	}
+}
+
+type ChatResponse struct {
+	Reply   string                         `json:"reply"`   // 回复
+	Context []openai.ChatCompletionMessage `json:"context"` // 上下文
 }
 
 func NewGPT(apiAuthTokens []string, opts ...Option) *chatGPT {
@@ -48,25 +54,39 @@ func NewGPT(apiAuthTokens []string, opts ...Option) *chatGPT {
 	return chat
 }
 
-func (c *chatGPT) Request(content string) (string, error) {
+func (c *chatGPT) Request(messages []openai.ChatCompletionMessage) (ChatResponse, error) {
+	var newMessages []openai.ChatCompletionMessage
+
 	ctx, cancel := context.WithTimeout(context.Background(), c.timeout)
 	defer cancel()
-	resp, err := c.client.CreateChatCompletion(
-		ctx,
+
+	if messages[0].Role != "system" {
+		newMessages = append(newMessages, DefaultSystemChatCompletionMessage())
+	}
+
+	resp, err := c.client.CreateChatCompletion(ctx,
 		openai.ChatCompletionRequest{
-			Model: c.model,
-			Messages: []openai.ChatCompletionMessage{
-				{
-					Role:    openai.ChatMessageRoleUser,
-					Content: content,
-				},
-			},
+			Model:    c.model,
+			Messages: messages,
 		},
 	)
-	
+
 	if err != nil {
-		return "", err
+		return ChatResponse{}, err
 	}
-	
-	return resp.Choices[0].Message.Content, nil
+
+	return ChatResponse{
+		Reply:   resp.Choices[0].Message.Content,
+		Context: append(newMessages, resp.Choices[0].Message),
+	}, nil
+}
+
+func (c *chatGPT) SimpleRequest(content string) (ChatResponse, error) {
+	messages := []openai.ChatCompletionMessage{
+		{
+			Role:    openai.ChatMessageRoleUser,
+			Content: content,
+		},
+	}
+	return c.Request(messages)
 }
