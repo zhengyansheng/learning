@@ -1,5 +1,0 @@
-package chatppt
-
-func main() {
-	
-}
