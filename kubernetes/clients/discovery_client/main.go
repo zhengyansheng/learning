@@ -4,7 +4,7 @@ import (
 	"flag"
 	"fmt"
 	"path/filepath"
-	
+
 	"k8s.io/client-go/discovery"
 	"k8s.io/client-go/tools/clientcmd"
 	"k8s.io/client-go/util/homedir"
@@ -22,12 +22,12 @@ func main() {
 		kubeconfig = flag.String("kubeconfig", "", "absolute path to the kubeconfig file")
 	}
 	flag.Parse()
-	
+
 	config, err := clientcmd.BuildConfigFromFlags("", *kubeconfig)
 	if err != nil {
 		panic(err)
 	}
-	
+
 	// discovery client
 	discoveryClient, err := discovery.NewDiscoveryClientForConfig(config)
 	if err != nil {
@@ -46,7 +46,7 @@ func main() {
 		fmt.Printf("i: %d, name: %v, kind: %v, version: %v, apiVersion: %v\n", i, group.Name, group.Kind, group.Versions, group.APIVersion)
 	}
 	fmt.Println("============================")
-	
+
 	for _, r := range apiResourceList {
 		//fmt.Println(i, r.Kind, r.APIVersion, r.APIResources, r.GroupVersion, r.String())
 		//fmt.Println(i, r.Kind, r.APIVersion, r.APIResources, r.GroupVersion)

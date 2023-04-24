@@ -5,7 +5,7 @@ import (
 	"flag"
 	"fmt"
 	"path/filepath"
-	
+
 	appsv1 "k8s.io/api/apps/v1"
 	apiv1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -22,17 +22,17 @@ func main() {
 		kubeconfig = flag.String("kubeconfig", "", "absolute path to the kubeconfig file")
 	}
 	flag.Parse()
-	
+
 	config, err := clientcmd.BuildConfigFromFlags("", *kubeconfig)
 	if err != nil {
 		panic(err)
 	}
-	
+
 	clientSet, err := kubernetes.NewForConfig(config)
 	if err != nil {
 		panic(err)
 	}
-	
+
 	// list
 	dl, err := clientSet.AppsV1().Deployments(apiv1.NamespaceDefault).List(context.TODO(), metav1.ListOptions{})
 	if err != nil {
@@ -43,14 +43,14 @@ func main() {
 			fmt.Printf("List deployment: %v", item.Name)
 		}
 	}
-	
+
 	// watch
 	watch, err := clientSet.AppsV1().Deployments(apiv1.NamespaceDefault).Watch(context.TODO(), metav1.ListOptions{})
 	if err != nil {
 		panic(err)
 	}
 	defer watch.Stop()
-	
+
 	for {
 		select {
 		case e := <-watch.ResultChan():
@@ -64,5 +64,5 @@ func main() {
 			}
 		}
 	}
-	
+
 }

@@ -5,7 +5,7 @@ import (
 	"flag"
 	"fmt"
 	"path/filepath"
-	
+
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/apimachinery/pkg/types"
@@ -13,7 +13,7 @@ import (
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/tools/clientcmd"
 	"k8s.io/client-go/util/homedir"
-	
+
 	"k8s.io/client-go/dynamic"
 	"k8s.io/client-go/restmapper"
 	"k8s.io/client-go/scale"
@@ -27,7 +27,7 @@ func main() {
 		kubeconfig = flag.String("kubeconfig", "", "absolute path to the kubeconfig file")
 	}
 	flag.Parse()
-	
+
 	config, err := clientcmd.BuildConfigFromFlags("", *kubeconfig)
 	if err != nil {
 		panic(err)
@@ -36,17 +36,17 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-	
+
 	cachedClient := cacheddiscovery.NewMemCacheClient(clientSet.Discovery())
-	
+
 	scaleKindResolver := scale.NewDiscoveryScaleKindResolver(clientSet.Discovery())
 	scaleClient, err := scale.NewForConfig(config, restmapper.NewDeferredDiscoveryRESTMapper(cachedClient), dynamic.LegacyAPIPathResolverFunc, scaleKindResolver)
-	
+
 	gr := schema.GroupResource{
 		Group:    "apps",
 		Resource: "deployments",
 	}
-	
+
 	// 1. 获取 scale, update scale
 	sc, err := scaleClient.Scales("default").Get(context.TODO(), gr, "nginx", metav1.GetOptions{})
 	if err != nil {
@@ -58,7 +58,7 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-	
+
 	//[
 	//{ "op": "test", "path": "/a/b/c", "value": "foo" },
 	//{ "op": "remove", "path": "/a/b/c" },
@@ -67,7 +67,7 @@ func main() {
 	//{ "op": "move", "from": "/a/b/c", "path": "/a/b/d" },
 	//{ "op": "copy", "from": "/a/b/d", "path": "/a/b/e" }
 	//]
-	
+
 	// 2. scale patch
 	payloadTemplate := `[{ "op": "%s", "path": "/spec/replicas", "value": %s }]`
 	patchPayload := fmt.Sprintf(payloadTemplate, "replace", "1")

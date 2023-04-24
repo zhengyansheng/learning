@@ -9,7 +9,7 @@ import (
 )
 
 const (
-	url = "http://localhost:8000/watch"
+	url = "http://localhost:8000/chunked"
 )
 
 func main() {
@@ -28,7 +28,7 @@ func main() {
 			fmt.Print(line)
 		}
 		if err == io.EOF {
-			break
+			return
 		}
 		if err != nil {
 			log.Fatal(err)

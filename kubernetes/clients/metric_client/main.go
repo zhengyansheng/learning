@@ -4,7 +4,7 @@ import (
 	"flag"
 	"fmt"
 	"path/filepath"
-	
+
 	"github.com/zhengyansheng/sample-operator/metrics"
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/labels"
@@ -31,29 +31,29 @@ func main() {
 		kubeconfig = flag.String("kubeconfig", "", "absolute path to the kubeconfig file")
 	}
 	flag.Parse()
-	
+
 	config, err := clientcmd.BuildConfigFromFlags("", *kubeconfig)
 	if err != nil {
 		panic(err)
 	}
-	
+
 	clientSet, err := kubernetes.NewForConfig(config)
 	if err != nil {
 		panic(err)
 	}
-	
+
 	builder := clientbuilder.SimpleControllerClientBuilder{ClientConfig: config}
 	discoveryClientOrDie := builder.DiscoveryClientOrDie("controller-discovery")
 	cacheClient := cacheddiscovery.NewMemCacheClient(discoveryClientOrDie)
 	restMapper := restmapper.NewDeferredDiscoveryRESTMapper(cacheClient)
-	
+
 	availableAPIsGetter := custom_metrics.NewAvailableAPIsGetter(clientSet.DiscoveryClient)
 	metricsClient := metrics.NewRESTMetricsClient(
 		resourceclient.NewForConfigOrDie(config),
 		custom_metrics.NewForConfig(config, restMapper, availableAPIsGetter),
 		external_metrics.NewForConfigOrDie(config),
 	)
-	
+
 	var set labels.Set = map[string]string{"test": "test"}
 	selector := labels.SelectorFromSet(set)
 	// 获取 metrice cpu

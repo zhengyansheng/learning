@@ -5,7 +5,7 @@ import (
 	"flag"
 	"fmt"
 	"path/filepath"
-	
+
 	appsv1 "k8s.io/api/apps/v1"
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
@@ -30,7 +30,7 @@ func main() {
 		kubeconfig = flag.String("kubeconfig", "", "absolute path to the kubeconfig file")
 	}
 	flag.Parse()
-	
+
 	config, err := clientcmd.BuildConfigFromFlags("", *kubeconfig)
 	if err != nil {
 		panic(err)
@@ -49,7 +49,7 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-	
+
 	// 序列化 方式1
 	var ds appsv1.Deployment
 	err = runtime.DefaultUnstructuredConverter.FromUnstructured(unstructured.Object, &ds)
@@ -57,7 +57,7 @@ func main() {
 		panic(err)
 	}
 	fmt.Printf("方式1 name: %v, namespace: %v\n", ds.Name, ds.Namespace)
-	
+
 	// 序列化 方式2
 	var ds2 appsv1.Deployment
 	bs, err := json.Marshal(unstructured)
@@ -69,5 +69,5 @@ func main() {
 		panic(err)
 	}
 	fmt.Printf("方式2 name: %v, namespace: %v\n", ds2.Name, ds2.Namespace)
-	
+
 }

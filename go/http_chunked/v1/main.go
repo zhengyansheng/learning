@@ -7,16 +7,16 @@ import (
 	"time"
 )
 
-func Watch(w http.ResponseWriter, r *http.Request) {
+func ChunkedHandle(w http.ResponseWriter, r *http.Request) {
 	flusher := w.(http.Flusher)
-	for i := 0; i < 5; i++ {
-		fmt.Fprintf(w, "Hello World\n")
+	for i := 0; i < 10; i++ {
+		fmt.Fprintf(w, "Hello %d\n", i)
 		flusher.Flush()
 		<-time.Tick(1 * time.Second)
 	}
 }
 
 func main() {
-	http.HandleFunc("/watch", Watch)
+	http.HandleFunc("/chunked", ChunkedHandle)
 	log.Fatal(http.ListenAndServe(":8000", nil))
 }
