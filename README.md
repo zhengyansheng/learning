@@ -1,42 +1,43 @@
-## kubernetes
+# learning
 
-> [kubernetes代码注解](https://github.com/zhengyansheng/kubernetes)
+## kubernetes 
+> [kubernetes 1.25.x 代码注解](https://github.com/zhengyansheng/kubernetes)
 
-`client-go 常见客户端`
-- ClientSet
-- DynamicClient
-- DiscoveryClient
-- ScaleClient
-- MetricClient
+### client-go 常见客户端
+- [X] ClientSet
+- [X] DynamicClient
+- [X] DiscoveryClient
+- [X] ScaleClient
+- [X] MetricClient
 
 
-`Informer`
-- ListAndWatch
-- Informer factory
-  - gvc
-  - ...
-- Indexer
+### Informer
+- [X] ListAndWatch
+- [X] Informer factory
+- [X] Indexer
 
-`Controller`
-- controller(workqueue, indexer, informer)
+### Controller
+- [X] controller(workqueue, indexer, informer)
 
-`operators`
-- nginx operator
-- elasticweb operator
+### Leader election
+- [ ] xxx
+
+### operator
+- [X] nginx operator
+- [X] elasticweb operator
 
 
 ## Go
+- [X] sync
 
-`sync`
 
+## 工具
+- [X] [反序列化etcd数据 kube-etcd-helper](https://github.com/yamamoto-febc/kube-etcd-helper)
+- [X] [json diff](https://jsondiff.com/)
 
-### 工具
-- [反序列化etcd数据 kube-etcd-helper](https://github.com/yamamoto-febc/kube-etcd-helper)
-- [json diff](https://jsondiff.com/)
+## 常见问题
 
-### 常见问题
-
-- [Informer 为什么要引入 Resync 机制](https://github.com/cloudnativeto/sig-kubernetes/issues/11)
+- [X] [Informer 为什么要引入 Resync 机制](https://github.com/cloudnativeto/sig-kubernetes/issues/11)
 
 
 
