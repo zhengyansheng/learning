@@ -65,12 +65,13 @@ func main() {
 	var leaseLockNamespace string
 	var id string
 
+	// config 文件的绝对路径
 	flag.StringVar(&kubeconfig, "kubeconfig", "", "absolute path to the kubeconfig file")
-	// holder的identity
+	// 持有者的身份标识
 	flag.StringVar(&id, "id", uuid.New().String(), "the holder identity name")
-	// 租赁锁定的资源名称
+	// 租约锁的名称
 	flag.StringVar(&leaseLockName, "lease-lock-name", "", "the lease lock resource name")
-	// 租赁锁定的资源所在的命名空间
+	// 租约锁的命名空间
 	flag.StringVar(&leaseLockNamespace, "lease-lock-namespace", "", "the lease lock resource namespace")
 	flag.Parse()
 
@@ -87,7 +88,7 @@ func main() {
 	// a ConfigMap, or an Endpoints (deprecated) object.
 	// Conflicting writes are detected and each client handles those actions
 	// independently.
-	// // 通过rest.Config来生成clientset
+	// 通过rest.Config来生成clientset
 	config, err := buildConfig(kubeconfig)
 	if err != nil {
 		klog.Fatal(err)
@@ -102,7 +103,6 @@ func main() {
 		select {}
 	}
 
-	// 使用Go context，以便我们可以告诉选举代码何时我们希望停止
 	// use a Go context so we can tell the leaderelection code when we
 	// want to step down
 	ctx, cancel := context.WithCancel(context.Background())
@@ -120,15 +120,18 @@ func main() {
 		cancel()
 	}()
 
-	// 创建 LeaderElectionConfig 并开始leader election
 	// we use the Lease lock type since edits to Leases are less common
 	// and fewer objects in the cluster watch "all Leases".
+	// 使用 resource lock 锁类型
 	lock := &resourcelock.LeaseLock{
+		// 指定 锁的名称 和 锁的命名空间
 		LeaseMeta: metav1.ObjectMeta{
 			Name:      leaseLockName,
 			Namespace: leaseLockNamespace,
 		},
+		// reset client
 		Client: client.CoordinationV1(),
+		// 锁的配置
 		LockConfig: resourcelock.ResourceLockConfig{
 			Identity: id,
 		},
@@ -136,7 +139,7 @@ func main() {
 
 	// start the leader election code loop
 	leaderelection.RunOrDie(ctx, leaderelection.LeaderElectionConfig{
-		Lock: lock, // 选择使用Lease lock类型
+		Lock: lock, // 使用Lease lock类型
 		// IMPORTANT: you MUST ensure that any code you have that
 		// is protected by the lease must terminate **before**
 		// you call cancel. Otherwise, you could have a background

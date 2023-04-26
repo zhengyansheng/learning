@@ -1,9 +1,10 @@
 # learning
 
 ## kubernetes 
-> [kubernetes 1.25.x 代码注解](https://github.com/zhengyansheng/kubernetes)
 
-### client-go 常见客户端
+[kubernetes 1.25.x 代码注解](https://github.com/zhengyansheng/kubernetes)
+
+### client-go clients
 - [X] ClientSet
 - [X] DynamicClient
 - [X] DiscoveryClient
