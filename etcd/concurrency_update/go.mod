@@ -1,16 +1,12 @@
-module zhengyansheng/learning/curd
+module concurrency
 
 go 1.20
 
-require (
-	go.etcd.io/etcd/client/v3 v3.5.8
-	k8s.io/klog/v2 v2.100.1
-)
+require go.etcd.io/etcd/client/v3 v3.5.8
 
 require (
 	github.com/coreos/go-semver v0.3.0 // indirect
 	github.com/coreos/go-systemd/v22 v22.3.2 // indirect
-	github.com/go-logr/logr v1.2.0 // indirect
 	github.com/gogo/protobuf v1.3.2 // indirect
 	github.com/golang/protobuf v1.5.2 // indirect
 	go.etcd.io/etcd/api/v3 v3.5.8 // indirect

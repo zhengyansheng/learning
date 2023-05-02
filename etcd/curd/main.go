@@ -4,32 +4,33 @@ import (
 	"context"
 	"crypto/tls"
 	"crypto/x509"
-	"fmt"
 	"io/ioutil"
-	"log"
 	"time"
 
 	client "go.etcd.io/etcd/client/v3"
+	"go.etcd.io/etcd/client/v3/concurrency"
+	"k8s.io/klog/v2"
 )
 
-var (
-	endPoints   []string = []string{"https://10.112.0.20:2379"}
-	etcdCA               = "/Users/zhengyansheng/tls/etcd/ca.crt"
-	etcdCert             = "/Users/zhengyansheng/tls/etcd/server.crt"
-	etcdCertKey          = "/Users/zhengyansheng/tls/etcd/server.key"
-)
+type Client struct {
+	client *client.Client
+	err    error
+}
 
-func NewEtcdClient() (*client.Client, error) {
-	// 为了保证 HTTPS 链接可信，需要预先加载目标证书签发机构的 CA 根证书
-	etcdCA, err := ioutil.ReadFile(etcdCA)
+func NewClientWithCert(caFile, certFile, keyFile string, endPoints []string) *Client {
+	c := &Client{}
+
+	pemCerts, err := ioutil.ReadFile(caFile)
 	if err != nil {
-		log.Fatal(err)
+		c.err = err
+		return c
 	}
 
 	// etcd 启用了双向 TLS 认证，所以客户端证书同样需要加载
-	etcdClientCert, err := tls.LoadX509KeyPair(etcdCert, etcdCertKey)
+	etcdClientCert, err := tls.LoadX509KeyPair(certFile, keyFile)
 	if err != nil {
-		log.Fatal(err)
+		c.err = err
+		return c
 	}
 
 	// 创建一个空的 CA Pool
@@ -37,7 +38,7 @@ func NewEtcdClient() (*client.Client, error) {
 	// 如果期望链接其他 TLS 端点，那么最好使用 x509.SystemCertPool() 方法先 copy 一份系统根 CA
 	// 然后再向这个 Pool 中添加自定义 CA
 	rootCertPool := x509.NewCertPool()
-	rootCertPool.AppendCertsFromPEM(etcdCA)
+	rootCertPool.AppendCertsFromPEM(pemCerts)
 
 	config := client.Config{
 		Endpoints:   endPoints,
@@ -48,68 +49,98 @@ func NewEtcdClient() (*client.Client, error) {
 			Certificates: []tls.Certificate{etcdClientCert},
 		},
 	}
-	return client.New(config)
+
+	etcdClient, err := client.New(config)
+	if err != nil {
+		c.err = err
+		return c
+	}
+	return &Client{
+		client: etcdClient,
+		err:    nil,
+	}
 }
 
-func TestWatch(c *client.Client) {
-	// 监听效果
-	// 测试写入
+func (c *Client) GetWithContext(ctx context.Context, key string) (string, error) {
+	response, err := c.client.Get(ctx, key)
+	if err != nil {
+		return "", err
+	}
+	for _, kv := range response.Kvs {
+		klog.Infof("create_revision: %v, mod_revision: %v, version: %v, \n", kv.CreateRevision, kv.ModRevision, string(kv.Value))
+		return string(kv.Value), nil
+
+	}
+	return "", nil
+}
+
+func (c *Client) PutWithContext(ctx context.Context, key, value string) error {
+	_, err := c.client.Put(ctx, key, value)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (c *Client) DeleteWithContext(ctx context.Context, key string) error {
+	//_, err := c.client.Delete(ctx, key, client.WithPrefix())
+	_, err := c.client.Delete(ctx, key)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (c *Client) Watch(key string) (kvChan chan string) {
+	// 监听 key 前缀的一组key的值
+	kvChan = make(chan string)
 	go func() {
-		for {
-			_, _ = c.Put(context.Background(), "/config/name", time.Now().String())
-			time.Sleep(2 * time.Second)
+		wChan := c.client.Watch(context.Background(), key, client.WithPrefix())
+		for watchResp := range wChan {
+			for _, event := range watchResp.Events {
+				klog.Infof("Event received! %s executed on %q with value %q\n", event.Type, event.Kv.Key, event.Kv.Value)
+				kvChan <- string(event.Kv.Value)
+			}
 		}
 	}()
-	wChan := c.Watch(context.Background(), "/config/name", client.WithPrefix()) // 监听key前缀的一组key的值
-	for watchResp := range wChan {
-		for _, event := range watchResp.Events {
-			fmt.Printf("Event received! %s executed on %q with value %q\n", event.Type, event.Kv.Key, event.Kv.Value)
-		}
-	}
+	return
 }
 
-func main() {
-	c, err := NewEtcdClient()
+// CreateLease 创建一个租约, 到期后key会被删除
+func (c *Client) CreateLease(ctx context.Context, ttl int64, key, value string) error {
+	leaseGrantResponse, err := c.client.Grant(ctx, ttl)
 	if err != nil {
-		panic(err)
+		return err
 	}
 
-	ctx, cancel := context.WithTimeout(context.Background(), time.Second*3)
-	defer cancel()
-
-	var key = "/xx/registry/namespaces/default/pods/monkey"
-
-	// put kv 到 etcd
-	_, err = c.Put(ctx, key, "apiVersion: v1\nkind: Pod ...")
+	putResponse, err := c.client.Put(ctx, key, value, client.WithLease(leaseGrantResponse.ID))
 	if err != nil {
-		panic(err)
+		return err
 	}
-	log.Println("put etcd success")
+	klog.Infof("%+v\n", putResponse)
+	return nil
+}
 
-	// 从 etcd 查询
-	response, err := c.Get(ctx, key)
+func (c *Client) Lock(pfx string, fn func()) error {
+	session, err := concurrency.NewSession(c.client)
 	if err != nil {
-		panic(err)
+		return err
 	}
-	for i, kv := range response.Kvs {
-		log.Printf("i: %v, kv: %v\n", i, kv)
-	}
-	log.Println("get etcd success")
+	defer session.Close()
 
-	// 从 etcd 删除 key
-	_, err = c.Delete(ctx, key)
-	if err != nil {
-		panic(err)
+	m := concurrency.NewMutex(session, pfx) // prefix
+	if err := m.Lock(context.TODO()); err != nil {
+		return err
 	}
 
-	// 从 etcd 删除前缀
-	_, err = c.Delete(ctx, key, client.WithPrefix())
-	if err != nil {
-		return
+	fn()
+
+	if err := m.Unlock(context.TODO()); err != nil {
+		return err
 	}
-	log.Println("删除成功")
+	return nil
+}
 
-	// watch
-	TestWatch(c)
-
+func (c *Client) Close() error {
+	return c.client.Close()
 }
