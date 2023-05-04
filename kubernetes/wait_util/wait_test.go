@@ -50,3 +50,73 @@ func TestPollImmediateUntil(t *testing.T) {
 		panic(err)
 	}
 }
+
+func TestGroupStart(t *testing.T) {
+	var w wait.Group
+	for i := 0; i < 3; i++ {
+		v := i
+		w.Start(func() {
+			for {
+				fmt.Printf("hello %d\n", v)
+				time.Sleep(time.Second)
+			}
+		})
+	}
+	w.Wait()
+	fmt.Println("done")
+}
+
+func TestGroupStartWithContext(t *testing.T) {
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second*4)
+	defer cancel()
+
+	var w wait.Group
+	for i := 0; i < 3; i++ {
+		v := i
+		w.StartWithContext(ctx, func(context.Context) {
+			for {
+				// 业务逻辑
+				fmt.Printf("hello %d\n", v)
+
+				select {
+				case <-ctx.Done():
+					return
+				default:
+					<-time.After(time.Second)
+				}
+			}
+		})
+	}
+	w.Wait()
+	fmt.Println("done")
+}
+
+func TestGroupStartWithChannel(t *testing.T) {
+	stopCh := make(chan struct{})
+
+	go func() {
+		time.Sleep(time.Second * 5)
+		stopCh <- struct{}{}
+		close(stopCh)
+	}()
+
+	var w wait.Group
+	for i := 0; i < 3; i++ {
+		v := i
+		w.StartWithChannel(stopCh, func(<-chan struct{}) {
+			for {
+				// 业务逻辑
+				fmt.Printf("hello %d\n", v)
+
+				select {
+				case <-stopCh:
+					return
+				default:
+					<-time.After(time.Second)
+				}
+			}
+		})
+	}
+	w.Wait()
+	fmt.Println("done")
+}

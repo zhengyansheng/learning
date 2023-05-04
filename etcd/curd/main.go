@@ -75,6 +75,7 @@ func (c *Client) GetWithContext(ctx context.Context, key string) (string, error)
 }
 
 func (c *Client) PutWithContext(ctx context.Context, key, value string) error {
+	defer c.client.Close()
 	_, err := c.client.Put(ctx, key, value)
 	if err != nil {
 		return err
@@ -83,6 +84,7 @@ func (c *Client) PutWithContext(ctx context.Context, key, value string) error {
 }
 
 func (c *Client) DeleteWithContext(ctx context.Context, key string) error {
+	defer c.client.Close()
 	//_, err := c.client.Delete(ctx, key, client.WithPrefix())
 	_, err := c.client.Delete(ctx, key)
 	if err != nil {
@@ -92,6 +94,7 @@ func (c *Client) DeleteWithContext(ctx context.Context, key string) error {
 }
 
 func (c *Client) Watch(key string) (kvChan chan string) {
+	defer c.client.Close()
 	// 监听 key 前缀的一组key的值
 	kvChan = make(chan string)
 	go func() {
@@ -108,6 +111,7 @@ func (c *Client) Watch(key string) (kvChan chan string) {
 
 // CreateLease 创建一个租约, 到期后key会被删除
 func (c *Client) CreateLease(ctx context.Context, ttl int64, key, value string) error {
+	defer c.client.Close()
 	leaseGrantResponse, err := c.client.Grant(ctx, ttl)
 	if err != nil {
 		return err
@@ -122,6 +126,8 @@ func (c *Client) CreateLease(ctx context.Context, ttl int64, key, value string) 
 }
 
 func (c *Client) Lock(pfx string, fn func()) error {
+	defer c.client.Close()
+
 	session, err := concurrency.NewSession(c.client)
 	if err != nil {
 		return err
@@ -139,8 +145,4 @@ func (c *Client) Lock(pfx string, fn func()) error {
 		return err
 	}
 	return nil
-}
-
-func (c *Client) Close() error {
-	return c.client.Close()
 }

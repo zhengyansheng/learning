@@ -32,6 +32,12 @@
 - [X] sync
 
 
+## Etcd
+- [X] curd
+- [X] watch
+- [X] concurrency_update
+
+
 ## 工具
 - [X] [反序列化etcd数据 kube-etcd-helper](https://github.com/yamamoto-febc/kube-etcd-helper)
 - [X] [json diff](https://jsondiff.com/)
