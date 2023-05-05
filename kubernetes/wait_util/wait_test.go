@@ -2,12 +2,10 @@ package wait_util
 
 import (
 	"context"
-	"fmt"
 	"testing"
 	"time"
 
 	"k8s.io/apimachinery/pkg/util/wait"
-	"k8s.io/klog/v2"
 )
 
 const (
@@ -33,7 +31,7 @@ func TestJitterUntil(t *testing.T) {
 			cancel()
 			return
 		}
-		klog.Infof("test jitter until func, get v: %v", v)
+		t.Logf("test jitter until func, get v: %v", v)
 
 	}, 5*time.Second, JitterFactor, true, ctx.Done())
 }
@@ -42,7 +40,7 @@ func TestPollImmediateUntil(t *testing.T) {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second*10)
 	defer cancel()
 	err := wait.PollImmediateUntil(time.Second*1, func() (bool, error) {
-		fmt.Println("continue")
+		t.Log("continue")
 		return true, nil
 		// return true, fmt.Errorf("xxx")
 	}, ctx.Done())
