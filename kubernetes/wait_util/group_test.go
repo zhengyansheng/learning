@@ -8,6 +8,7 @@ import (
 	"k8s.io/apimachinery/pkg/util/wait"
 )
 
+// TestGroupStart 启动goroutine，堵塞直到goroutine都结束
 func TestGroupStart(t *testing.T) {
 	var w wait.Group
 	for i := 0; i < 3; i++ {
@@ -24,6 +25,7 @@ func TestGroupStart(t *testing.T) {
 	t.Log("Done")
 }
 
+// TestGroupStartWithContext 启动goroutine，堵塞直到goroutine都结束或者超时
 func TestGroupStartWithContext(t *testing.T) {
 	// 设置超时时间
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
@@ -50,6 +52,7 @@ func TestGroupStartWithContext(t *testing.T) {
 	t.Log("Done")
 }
 
+// TestGroupStartWithChannel 启动goroutine，堵塞直到goroutine都结束或者stopCh关闭
 func TestGroupStartWithChannel(t *testing.T) {
 	var w wait.Group
 	stopCh := make(chan struct{})
