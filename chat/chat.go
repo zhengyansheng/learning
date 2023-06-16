@@ -1,20 +1,13 @@
-package chatgpt
+package chat
 
 import (
 	"context"
 	"errors"
 	"fmt"
 	"io"
-	"math/rand"
-	"net/http"
-	"net/url"
 	"time"
 
 	openai "github.com/sashabaranov/go-openai"
-)
-
-var (
-	sessionRequestTimeout error = errors.New("会话请求超时, 请再次尝试")
 )
 
 type chatGPT struct {
@@ -42,36 +35,12 @@ type streamMessage struct {
 	Err error       // error message
 }
 
-func NewGPT(apiAuthTokens []string, opts ...Option) *chatGPT {
-	apiToken := apiAuthTokens[rand.Intn(len(apiAuthTokens))]
+func NewGPT(apiKey, baseURL string, opts ...Option) *chatGPT {
+	cfg := openai.DefaultAzureConfig(apiKey, baseURL)
 	chat := &chatGPT{
-		model:   openai.GPT3Dot5Turbo0301,   // 提供一个默认值
-		client:  openai.NewClient(apiToken), // 随机token
-		timeout: time.Second * 60,           // 默认超时60秒
-	}
-	for _, opt := range opts {
-		opt(chat)
-	}
-	return chat
-}
-
-func NewGPTProxy(apiAuthTokens []string, opts ...Option) *chatGPT {
-	config := openai.DefaultConfig(apiAuthTokens[rand.Intn(len(apiAuthTokens))])
-	proxyUrl, err := url.Parse("http://x.x.x.x:1234")
-	if err != nil {
-		panic(err)
-	}
-	transport := &http.Transport{
-		Proxy: http.ProxyURL(proxyUrl),
-	}
-	config.HTTPClient = &http.Client{
-		Transport: transport,
-	}
-
-	chat := &chatGPT{
-		model:   openai.GPT3Dot5Turbo0301,           // 提供一个默认值
-		client:  openai.NewClientWithConfig(config), // 随机token
-		timeout: time.Second * 60,                   // 默认超时30秒
+		model:   openai.GPT3Dot5Turbo,            // 提供一个默认值
+		client:  openai.NewClientWithConfig(cfg), // 随机token
+		timeout: time.Second * 60,                // 默认超时60秒
 	}
 	for _, opt := range opts {
 		opt(chat)
@@ -99,7 +68,7 @@ func (c *chatGPT) CreateChatCompletionWithContent(messages []openai.ChatCompleti
 
 	if err != nil {
 		if errors.Is(err, context.DeadlineExceeded) {
-			return Response{}, sessionRequestTimeout
+			return Response{}, fmt.Errorf("timeout: %v", "会话请求超时, 请再次尝试")
 		}
 		return Response{}, err
 	}
