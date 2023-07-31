@@ -1,10 +1,12 @@
 package main
 
 import (
+	"bytes"
 	"context"
-	"flag"
+	"encoding/json"
 	"fmt"
 	"path/filepath"
+	"time"
 
 	"k8s.io/apimachinery/pkg/api/meta"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -14,19 +16,17 @@ import (
 	"k8s.io/client-go/util/homedir"
 )
 
-var (
-	defaultName = "terraform-example"
-)
+// PrintStruct 写一个函数，传递一个参数，实现golang struct格式化对其输出
+func PrintStruct(obj interface{}) {
+	bs, _ := json.Marshal(obj)
+	var out bytes.Buffer
+	json.Indent(&out, bs, "", "\t")
+	fmt.Printf("%+v\n", out.String())
+}
 
-func getMetadataClient() metadata.Interface {
-	var kubeconfig *string
-	if home := homedir.HomeDir(); home != "" {
-		kubeconfig = flag.String("kubeconfig", filepath.Join(home, ".kube", "config"), "(optional) absolute path to the kubeconfig file")
-	} else {
-		kubeconfig = flag.String("kubeconfig", "", "absolute path to the kubeconfig file")
-	}
-	flag.Parse()
-
+func getClient() metadata.Interface {
+	kubeConfig := filepath.Join(homedir.HomeDir(), ".kube", "config")
+	kubeconfig := &kubeConfig
 	config, err := clientcmd.BuildConfigFromFlags("", *kubeconfig)
 	if err != nil {
 		panic(err)
@@ -40,7 +40,7 @@ func getMetadataClient() metadata.Interface {
 }
 
 func GetRs() {
-	metadataClient := getMetadataClient()
+	metadataClient := getClient()
 
 	// 通过metadata找到资源对应的owner
 	resource := schema.GroupVersionResource{Group: "apps", Version: "v1", Resource: "replicasets"}
@@ -55,17 +55,46 @@ func GetRs() {
 
 }
 
-func DeletePod() {
-	metadataClient := getMetadataClient()
+func GetPod() {
+	metadataClient := getClient()
 
 	// 通过metadata找到资源对应的owner
 	resource := schema.GroupVersionResource{Group: "", Version: "v1", Resource: "pods"}
-	err := metadataClient.Resource(resource).Namespace("default").Delete(context.TODO(), "nginx2", metav1.DeleteOptions{})
+	var subResources []string
+	var podName = "nginx2"
+	partialObjectMetadata, err := metadataClient.Resource(resource).Namespace("default").Get(context.TODO(), podName, metav1.GetOptions{}, subResources...)
+	if err != nil {
+		panic(err)
+	}
+	//fmt.Printf("%+v\n", partialObjectMetadata)
+	PrintStruct(partialObjectMetadata)
+}
+
+func DeletePod() {
+	metadataClient := getClient()
+	var podName = "nginx2"
+
+	// 通过metadata找到资源对应的owner
+	resource := schema.GroupVersionResource{Group: "", Version: "v1", Resource: "pods"}
+	err := metadataClient.Resource(resource).Namespace("default").Delete(context.TODO(), podName, metav1.DeleteOptions{})
 	if err != nil {
 		panic(err)
 	}
 }
 
 func main() {
+	// get replicaset
+	GetPod()
+	//GetRs()
+	time.Sleep(time.Second)
+	fmt.Println("------------------")
+
+	// delete pod from metadata client
 	DeletePod()
+	time.Sleep(time.Second)
+	fmt.Println("------------------")
+
+	// mark
+	GetPod()
+	fmt.Println("------------------")
 }
