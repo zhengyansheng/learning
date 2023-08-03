@@ -6,11 +6,11 @@ import (
 	"encoding/json"
 	"fmt"
 	"path/filepath"
-	"time"
 
 	"k8s.io/apimachinery/pkg/api/meta"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime/schema"
+	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/client-go/metadata"
 	"k8s.io/client-go/tools/clientcmd"
 	"k8s.io/client-go/util/homedir"
@@ -82,19 +82,36 @@ func DeletePod() {
 	}
 }
 
+func DeleteCm() {
+	metadataClient := getClient()
+
+	// 通过metadata找到资源对应的owner
+	resource := schema.GroupVersionResource{Group: "", Version: "v1", Resource: "configmaps"}
+
+	policy := metav1.DeletePropagationBackground
+	var uid types.UID = "0d33e93b-1ab2-4622-8f55-2a14f03fcc76"
+	preconditions := metav1.Preconditions{UID: &uid}
+	deleteOptions := metav1.DeleteOptions{Preconditions: &preconditions, PropagationPolicy: &policy}
+	err := metadataClient.Resource(resource).Namespace("default").Delete(context.TODO(), "cm", deleteOptions)
+	if err != nil {
+		panic(err)
+	}
+}
+
 func main() {
-	// get replicaset
-	GetPod()
-	//GetRs()
-	time.Sleep(time.Second)
-	fmt.Println("------------------")
-
-	// delete pod from metadata client
-	DeletePod()
-	time.Sleep(time.Second)
-	fmt.Println("------------------")
-
-	// mark
-	GetPod()
-	fmt.Println("------------------")
+	//// get replicaset
+	//GetPod()
+	////GetRs()
+	//time.Sleep(time.Second)
+	//fmt.Println("------------------")
+	//
+	//// delete pod from metadata client
+	//DeletePod()
+	//time.Sleep(time.Second)
+	//fmt.Println("------------------")
+	//
+	//// mark
+	//GetPod()
+	//fmt.Println("------------------")
+	DeleteCm()
 }
