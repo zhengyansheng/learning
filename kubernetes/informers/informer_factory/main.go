@@ -60,22 +60,6 @@ type event struct {
 	gvk    schema.GroupVersionKind
 }
 
-type GraphBuilder struct {
-	sharedInformers informerfactory.InformerFactory
-	restMapper      meta.RESTMapper
-	graphChanges    workqueue.RateLimitingInterface
-	monitors        monitors
-	stopCh          <-chan struct{}
-}
-
-func NewGraphBuilder(informer informerfactory.InformerFactory, restMapper meta.RESTMapper) *GraphBuilder {
-	return &GraphBuilder{
-		sharedInformers: informer,
-		restMapper:      restMapper,
-		graphChanges:    workqueue.NewNamedRateLimitingQueue(workqueue.DefaultControllerRateLimiter(), "garbage_collector_graph_changes"),
-	}
-}
-
 type monitors map[schema.GroupVersionResource]*monitor
 
 // monitor runs a Controller with a local stop channel.
@@ -90,6 +74,22 @@ type monitor struct {
 
 func (m *monitor) Run() {
 	m.controller.Run(m.stopCh)
+}
+
+type GraphBuilder struct {
+	sharedInformers informerfactory.InformerFactory
+	restMapper      meta.RESTMapper
+	graphChanges    workqueue.RateLimitingInterface
+	monitors        monitors
+	stopCh          <-chan struct{}
+}
+
+func NewGraphBuilder(informer informerfactory.InformerFactory, restMapper meta.RESTMapper) *GraphBuilder {
+	return &GraphBuilder{
+		sharedInformers: informer,
+		restMapper:      restMapper,
+		graphChanges:    workqueue.NewNamedRateLimitingQueue(workqueue.DefaultControllerRateLimiter(), "garbage_collector_graph_changes"),
+	}
 }
 
 func (gb *GraphBuilder) Run() {
@@ -261,10 +261,11 @@ func main() {
 		panic(err)
 	}
 
-	// 实力化 share informer factory
-	// ResyncPeriod: 默认的同步周期
-	sharedInformers := informers.NewSharedInformerFactory(clientSet, 0)
+	// 实力化 share informer factory ResyncPeriod: 默认的同步周期
 	metadataInformers := metadatainformer.NewSharedInformerFactory(metadataClient, 0)
+
+	sharedInformers := informers.NewSharedInformerFactory(clientSet, 0)
+	//informers.NewSharedInformerFactoryWithOptions(clientSet, 0, informers.WithNamespace("default")) // 指定informer的namespace
 	sharedInformerFactory := informerfactory.NewInformerFactory(sharedInformers, metadataInformers)
 
 	// Use a discovery client capable of being refreshed.

@@ -149,3 +149,83 @@ func main() {
 	}
 	select {}
 }
+
+func simple() {
+	var kubeconfig *string
+	if home := homedir.HomeDir(); home != "" {
+		kubeconfig = flag.String("kubeconfig", filepath.Join(home, ".kube", "config"), "(optional) absolute path to the kubeconfig file")
+	} else {
+		kubeconfig = flag.String("kubeconfig", "", "absolute path to the kubeconfig file")
+	}
+	flag.Parse()
+
+	config, err := clientcmd.BuildConfigFromFlags("", *kubeconfig)
+	if err != nil {
+		panic(err)
+	}
+
+	clientSet, err := kubernetes.NewForConfig(config)
+	if err != nil {
+		panic(err)
+	}
+
+	handlers := cache.ResourceEventHandlerFuncs{
+		AddFunc: func(obj interface{}) {
+			switch obj.(type) {
+			case *apiv1.Pod:
+				pod := obj.(*apiv1.Pod)
+				fmt.Printf("add pod: %v/%v\n", pod.Namespace, pod.Name)
+			case *appsv1.Deployment:
+				deploy := obj.(*appsv1.Deployment)
+				fmt.Printf("add deploy: %v/%v\n", deploy.Namespace, deploy.Name)
+			}
+		},
+		UpdateFunc: func(oldObj, newObj interface{}) {
+			switch oldObj.(type) {
+			case *apiv1.Pod:
+				pod := newObj.(*apiv1.Pod)
+				fmt.Printf("update pod: %v/%v\n", pod.Namespace, pod.Name)
+			case *appsv1.Deployment:
+				deploy := newObj.(*appsv1.Deployment)
+				fmt.Printf("update deploy: %v/%v\n", deploy.Namespace, deploy.Name)
+			}
+		},
+		DeleteFunc: func(obj interface{}) {
+			switch obj.(type) {
+			case *apiv1.Pod:
+				pod := obj.(*apiv1.Pod)
+				fmt.Printf("delete pod: %v/%v\n", pod.Namespace, pod.Name)
+			case *appsv1.Deployment:
+				deploy := obj.(*appsv1.Deployment)
+				fmt.Printf("delete deploy: %v/%v\n", deploy.Namespace, deploy.Name)
+			}
+		},
+	}
+	// 1. 实例化 informer factory
+	factory := informers.NewSharedInformerFactory(clientSet, defaultResync)
+
+	// 2. 向 factory 注册 各种Informer, 比如： podInformer
+	podInformer := factory.Core().V1().Pods()
+	sharedIndexInformer := podInformer.Informer()
+	sharedIndexInformer.AddEventHandler(handlers)
+
+	// 3. 启动 所有注册到factory到informers ( list and watch )
+	stopCh := make(chan struct{})
+	defer close(stopCh)
+	factory.Start(stopCh)
+
+	// 4. 等待所有的informer同步完成
+	factory.WaitForCacheSync(stopCh)
+
+	fmt.Println("====================从Indexer缓存中读取数据=============================")
+	// pod index
+	podLister := podInformer.Lister()
+	pods, err := podLister.Pods(apiv1.NamespaceDefault).List(labels.Everything())
+	if err != nil {
+		return
+	}
+	for i, pod := range pods {
+		fmt.Printf("[i: %v -> pod], name: %v, namespace: %v\n", i, pod.Name, pod.Namespace)
+	}
+	select {}
+}
