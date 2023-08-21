@@ -169,6 +169,7 @@ func simple() {
 		panic(err)
 	}
 
+	// 定义处理函数
 	handlers := cache.ResourceEventHandlerFuncs{
 		AddFunc: func(obj interface{}) {
 			switch obj.(type) {
@@ -201,31 +202,21 @@ func simple() {
 			}
 		},
 	}
-	// 1. 实例化 informer factory
-	factory := informers.NewSharedInformerFactory(clientSet, defaultResync)
 
-	// 2. 向 factory 注册 各种Informer, 比如： podInformer
-	podInformer := factory.Core().V1().Pods()
-	sharedIndexInformer := podInformer.Informer()
-	sharedIndexInformer.AddEventHandler(handlers)
+	// 1. 创建 informer factory
+	SharedInformerFactory := informers.NewSharedInformerFactory(clientSet, time.Minute*5)
 
-	// 3. 启动 所有注册到factory到informers ( list and watch )
+	// 2. 创建 deploymentInformer
+	deploymentSharedInformer := SharedInformerFactory.Apps().V1().Deployments().Informer()
+	deploymentSharedInformer.AddEventHandler(handlers)
+
+	// 3. 启动 informers ( 已经注册到factory到informer )
 	stopCh := make(chan struct{})
 	defer close(stopCh)
-	factory.Start(stopCh)
+	SharedInformerFactory.Start(stopCh) // controller.Run()
 
-	// 4. 等待所有的informer同步完成
-	factory.WaitForCacheSync(stopCh)
+	// 4. 等待 informer list 操作执行完成
+	SharedInformerFactory.WaitForCacheSync(stopCh)
 
-	fmt.Println("====================从Indexer缓存中读取数据=============================")
-	// pod index
-	podLister := podInformer.Lister()
-	pods, err := podLister.Pods(apiv1.NamespaceDefault).List(labels.Everything())
-	if err != nil {
-		return
-	}
-	for i, pod := range pods {
-		fmt.Printf("[i: %v -> pod], name: %v, namespace: %v\n", i, pod.Name, pod.Namespace)
-	}
 	select {}
 }

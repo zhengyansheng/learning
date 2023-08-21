@@ -4,8 +4,12 @@ import (
 	"flag"
 	"fmt"
 	"path/filepath"
+	"reflect"
+	"strings"
 	"time"
 
+	appsv1 "k8s.io/api/apps/v1"
+	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/meta"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	utilruntime "k8s.io/apimachinery/pkg/util/runtime"
@@ -34,6 +38,33 @@ const (
 var (
 	resources map[schema.GroupVersionResource]struct{}
 )
+
+var podMap map[string]*pod
+
+type pod struct {
+	ClsName    string
+	Name       string
+	Namespace  string
+	PodIP      string
+	HostIP     string
+	Phase      string
+	CreateTime string
+	Restarts   int32
+	Version    string
+	Status     string
+}
+
+func (p *pod) AddPod(pod *pod) bool {
+	key := fmt.Sprintf("%s/%s/%s", pod.ClsName, pod.Namespace, pod.Name)
+	v, exists := podMap[key]
+	if !exists {
+		podMap[pod.Name] = pod
+	}
+	if !reflect.DeepEqual(v, pod) {
+		podMap[pod.Name] = pod
+	}
+	return true
+}
 
 type eventType int
 
@@ -141,12 +172,55 @@ func (gb *GraphBuilder) processGraphChanges() bool {
 		utilruntime.HandleError(fmt.Errorf("cannot access obj: %v", err))
 		return true
 	}
-	klog.Infof("processing %s event for %s %s/%s", event.eventType, event.gvk, accessor.GetNamespace(), accessor.GetName())
 
+	o := event.obj
 	switch {
-	case event.eventType == addEvent:
-	case event.eventType == updateEvent:
+	case event.eventType == addEvent || event.eventType == updateEvent:
+		switch o.(type) {
+		case *corev1.Pod:
+			p := o.(*corev1.Pod)
+
+			var (
+				status              string
+				version             string
+				containerCount      int
+				containerReadyCount int32
+				restartCount        int32
+			)
+
+			containerCount = len(p.Status.ContainerStatuses)
+			for _, c := range p.Status.ContainerStatuses {
+
+				if c.Ready {
+					containerReadyCount++
+				}
+
+				restartCount += c.RestartCount
+			}
+
+			for _, c := range p.Spec.Containers {
+				if c.Name == p.Name {
+					if strings.Contains(c.Image, ":") {
+						version = strings.Split(c.Image, ":")[1]
+					} else {
+						version = "latest"
+					}
+				}
+			}
+
+			status = fmt.Sprintf("%d/%d", containerReadyCount, containerCount)
+			klog.Infof("%v %s/%s create time: %v, phase: %v, pod ip: %v, node ip: %v, restart count: %v, version: %v, status: %v",
+				event.eventType.String(), accessor.GetNamespace(), accessor.GetName(), accessor.GetCreationTimestamp().Format("2006-01-02 15:04:05"),
+				p.Status.Phase, p.Status.PodIP, p.Status.HostIP, restartCount, version, status)
+
+		case *appsv1.Deployment:
+		}
 	case event.eventType == deleteEvent:
+		switch o.(type) {
+		case *corev1.Pod:
+			klog.Infof("delete pod %s/%s", accessor.GetNamespace(), accessor.GetName())
+		case *appsv1.Deployment:
+		}
 	}
 	return true
 }

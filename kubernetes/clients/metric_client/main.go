@@ -2,7 +2,6 @@ package main
 
 import (
 	"flag"
-	"fmt"
 	"path/filepath"
 
 	"github.com/zhengyansheng/sample-operator/metrics"
@@ -14,13 +13,10 @@ import (
 	"k8s.io/client-go/tools/clientcmd"
 	"k8s.io/client-go/util/homedir"
 	"k8s.io/controller-manager/pkg/clientbuilder"
+	"k8s.io/klog/v2"
 	resourceclient "k8s.io/metrics/pkg/client/clientset/versioned/typed/metrics/v1beta1"
 	"k8s.io/metrics/pkg/client/custom_metrics"
 	"k8s.io/metrics/pkg/client/external_metrics"
-)
-
-var (
-	defaultName = "terraform-example"
 )
 
 func main() {
@@ -54,16 +50,34 @@ func main() {
 		external_metrics.NewForConfigOrDie(config),
 	)
 
-	var set labels.Set = map[string]string{"test": "test"}
+	var namespace = "sim"
+	var set labels.Set = map[string]string{"app": "zipkin-server"}
 	selector := labels.SelectorFromSet(set)
-	// 获取 metrice cpu
-	podMetricsInfo, time, err := metricsClient.GetResourceMetric(v1.ResourceMemory, "default", selector)
-	if err != nil {
-		return
+
+	// 获取 metric cpu
+	resourceNames := []v1.ResourceName{v1.ResourceCPU, v1.ResourceMemory}
+	for _, resourceName := range resourceNames {
+		podMetricsInfo, _, err := metricsClient.GetResourceMetric(resourceName, namespace, selector)
+		if err != nil {
+			return
+		}
+
+		for name, metric := range podMetricsInfo {
+			klog.Infof("name: %v, value: %+v", name, metric.Value)
+		}
 	}
-	fmt.Println("time", time)
-	for name, metric := range podMetricsInfo {
-		//fmt.Printf("name: %v, metric: %+v\n", name, metric)
-		fmt.Printf("name: %v, value: %+v\n", name, metric.Value/1024/1024/1024)
+}
+
+func getMetric(mc metrics.MetricsClient, namespace string, selector labels.Selector) {
+	resourceNames := []v1.ResourceName{v1.ResourceCPU, v1.ResourceMemory}
+	for _, resourceName := range resourceNames {
+		podMetricsInfo, _, err := mc.GetResourceMetric(resourceName, namespace, selector)
+		if err != nil {
+			return
+		}
+
+		for name, metric := range podMetricsInfo {
+			klog.Infof("name: %v, value: %+v", name, metric.Value)
+		}
 	}
 }
