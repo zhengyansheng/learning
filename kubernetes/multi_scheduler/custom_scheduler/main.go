@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"math/rand"
+	"path/filepath"
 	"time"
 
 	corev1 "k8s.io/api/core/v1"
@@ -14,6 +15,8 @@ import (
 	listersv1 "k8s.io/client-go/listers/core/v1"
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/cache"
+	"k8s.io/client-go/tools/clientcmd"
+	"k8s.io/client-go/util/homedir"
 	"k8s.io/klog/v2"
 )
 
@@ -31,11 +34,20 @@ type Scheduler struct {
 }
 
 func NewScheduler(podQueue chan *corev1.Pod, quit chan struct{}) *Scheduler {
-	config, err := rest.InClusterConfig()
+	var (
+		err        error
+		kubeconfig *string
+		config     *rest.Config
+	)
+	kubeConfigPath := filepath.Join(homedir.HomeDir(), ".kube", "config")
+	kubeconfig = &kubeConfigPath
+	config, err = clientcmd.BuildConfigFromFlags("", *kubeconfig)
 	if err != nil {
-		klog.Fatal(err)
+		config, err = rest.InClusterConfig()
+		if err != nil {
+			klog.Fatal(err)
+		}
 	}
-
 	clientSet, err := kubernetes.NewForConfig(config)
 	if err != nil {
 		klog.Fatal(err)
