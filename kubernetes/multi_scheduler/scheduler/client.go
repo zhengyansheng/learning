@@ -18,13 +18,6 @@ func getClientset() (*kubernetes.Clientset, error) {
 
 	// 判断文件是否存在
 	if _, err := os.Stat(kubePath); os.IsNotExist(err) {
-		kubeConfig := &kubePath
-		config, err := clientcmd.BuildConfigFromFlags("", *kubeConfig)
-		if err != nil {
-			return nil, err
-		}
-		return kubernetes.NewForConfig(config)
-	} else {
 		// 不存在，使用 in-cluster 配置
 		config, err := rest.InClusterConfig()
 		if err != nil {
@@ -32,4 +25,11 @@ func getClientset() (*kubernetes.Clientset, error) {
 		}
 		return kubernetes.NewForConfig(config)
 	}
+	//kubeConfig := &kubePath
+	config, err := clientcmd.BuildConfigFromFlags("", kubePath)
+	if err != nil {
+		return nil, err
+	}
+	return kubernetes.NewForConfig(config)
 }
+
