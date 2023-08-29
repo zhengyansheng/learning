@@ -1,6 +1,9 @@
-# build stage
-FROM golang:1.19.9-alpine3.17 as backend
+FROM golang:latest
 
-ADD ./random-scheduler /bin/
+ENV GOPROXY https://goproxy.cn,direct
 
-ENTRYPOINT ["/bin/random-scheduler"]
+WORKDIR /app/
+COPY . /app/
+RUN go build -o random-scheduler .
+
+ENTRYPOINT ["/app//random-scheduler"]
