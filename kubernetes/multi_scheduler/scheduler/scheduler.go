@@ -1,72 +1,43 @@
-package main
+package scheduler
 
 import (
 	"context"
 	"fmt"
-	"math/rand"
-	"path/filepath"
 	"time"
 
+	"github.com/zhengyansheng/multi_scheduler/algorithm"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/client-go/informers"
 	"k8s.io/client-go/kubernetes"
 	listersv1 "k8s.io/client-go/listers/core/v1"
-	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/cache"
-	"k8s.io/client-go/tools/clientcmd"
-	"k8s.io/client-go/util/homedir"
 	"k8s.io/client-go/util/workqueue"
 	"k8s.io/klog/v2"
 )
-
-const schedulerName = "random-scheduler"
 
 type predicateFunc func(node *corev1.Node, pod *corev1.Pod) bool
 type priorityFunc func(node *corev1.Node, pod *corev1.Pod) int
 
 type Scheduler struct {
-	clientset  *kubernetes.Clientset
-	queue      workqueue.RateLimitingInterface
-	nodeLister listersv1.NodeLister
-	predicates []predicateFunc
-	priorities []priorityFunc
+	schedulerName string
+	clientset     *kubernetes.Clientset
+	queue         workqueue.RateLimitingInterface
+	nodeLister    listersv1.NodeLister
+	predicates    []predicateFunc
+	priorities    []priorityFunc
 }
 
-func NewScheduler(quit chan struct{}) *Scheduler {
-	var (
-		err    error
-		config *rest.Config
-	)
-	kubeConfigPath := filepath.Join(homedir.HomeDir(), ".kube", "config")
-	kubeconfig := &kubeConfigPath
-	config, err = clientcmd.BuildConfigFromFlags("", *kubeconfig)
+func NewScheduler(ctx context.Context, schedulerName string, defaultResync time.Duration) *Scheduler {
+	// 创建一个 clientset 对象
+	clientSet, err := getClientset()
 	if err != nil {
-		config, err = rest.InClusterConfig()
-		if err != nil {
-			klog.Fatal(err)
-		}
-	}
-	clientSet, err := kubernetes.NewForConfig(config)
-	if err != nil {
-		klog.Fatal(err)
+		panic(err)
 	}
 	queue := workqueue.NewRateLimitingQueue(workqueue.DefaultControllerRateLimiter())
 
-	// 创建一个 Scheduler 对象
-	scheduler := &Scheduler{
-		clientset:  clientSet,
-		queue:      queue,
-		nodeLister: initInformers(clientSet, queue, quit),
-	}
-	// 注册调度器
-	scheduler.registerPredicates()
-	scheduler.registerPriorities()
-	return scheduler
-}
-
-func initInformers(clientSet *kubernetes.Clientset, queue workqueue.RateLimitingInterface, quit chan struct{}) listersv1.NodeLister {
+	// 创建一个 SharedInformerFactory 对象
 	factory := informers.NewSharedInformerFactory(clientSet, 0)
 
 	nodeInformer := factory.Core().V1().Nodes()
@@ -95,26 +66,40 @@ func initInformers(clientSet *kubernetes.Clientset, queue workqueue.RateLimiting
 		},
 	})
 
-	factory.Start(quit)
-	return nodeInformer.Lister()
+	// 启动 informer
+	factory.Start(ctx.Done())
+
+	// 创建一个 Scheduler 对象
+	scheduler := &Scheduler{
+		schedulerName: schedulerName,
+		clientset:     clientSet,
+		queue:         queue,
+		nodeLister:    nodeInformer.Lister(),
+	}
+	// 注册调度器
+	scheduler.registerPredicates()
+	scheduler.registerPriorities()
+	return scheduler
 }
 
-func (s *Scheduler) Run() {
-	ctx := context.Background()
-
-	// 启动一个 goroutine，用于处理 podQueue 中的 pod
-	s.schedule(ctx)
+func (s *Scheduler) Run(ctx context.Context) {
+	go s.scheduler(ctx)
 }
 
-func (s *Scheduler) schedule(ctx context.Context) {
+func (s *Scheduler) scheduler(ctx context.Context) {
 	for {
-		// 从 podQueue 中获取一个 pod
+		// 从 queue 中获取一个 pod
 		item, done := s.queue.Get()
 		if done {
 			return
 		}
 
+		// 处理完后，将 pod 从队列中删除
+		s.queue.Done(item)
+
+		// 将 item 转换为 pod
 		pod := item.(*corev1.Pod)
+
 		// 执行调度
 		s.scheduleOne(ctx, pod)
 	}
@@ -138,14 +123,12 @@ func (s *Scheduler) scheduleOne(ctx context.Context, pod *corev1.Pod) {
 	node := s.selectNode(pod, priorityNodes)
 	if node == nil {
 		// 没有节点可用，将 pod 重新放入队列
-		s.queue.Add(pod)
+		s.queue.AddRateLimited(pod)
 		return
 	}
-	klog.Infof("pod %s/%s select node %s", pod.Namespace, pod.Name, node.GetName())
 
 	// 绑定 pod 和 node
-	err = s.bindPod(ctx, pod, node)
-	if err != nil {
+	if err = s.bindPod(ctx, pod, node); err != nil {
 		klog.Errorf("bind pod %s to node %s failed: %v", pod.GetName(), node.GetName(), err)
 		return
 	}
@@ -237,7 +220,7 @@ func (s *Scheduler) watchEvent(ctx context.Context, p *corev1.Pod, message strin
 		FirstTimestamp: metav1.NewTime(timestamp),
 		Type:           "Normal",
 		Source: corev1.EventSource{
-			Component: schedulerName,
+			Component: s.schedulerName,
 		},
 		InvolvedObject: corev1.ObjectReference{
 			Kind:      "Pod",
@@ -257,23 +240,14 @@ func (s *Scheduler) watchNodes() {
 	// 监听节点的逻辑
 }
 
-func randomPredicate(node *corev1.Node, pod *corev1.Pod) bool {
-	r := rand.Intn(2)
-	return r == 0
-}
-
-func randomPriority(node *corev1.Node, pod *corev1.Pod) int {
-	return rand.Intn(100)
-}
-
 func (s *Scheduler) registerPredicates() {
 	// 注册预选的逻辑
-	s.registerPredicate(randomPredicate)
+	s.registerPredicate(algorithm.RandomPredicate)
 }
 
 func (s *Scheduler) registerPriorities() {
 	// 注册优选的逻辑
-	s.registerPriority(randomPriority)
+	s.registerPriority(algorithm.RandomPriority)
 }
 
 func (s *Scheduler) registerPredicate(predicate predicateFunc) {
@@ -294,17 +268,4 @@ func (s *Scheduler) registerPriorityFunc(priority priorityFunc) {
 	s.registerPriority(func(node *corev1.Node, pod *corev1.Pod) int {
 		return priority(node, pod)
 	})
-}
-
-func main() {
-	klog.Info("I'm a scheduler!")
-	rand.Seed(time.Now().Unix())
-
-	quit := make(chan struct{})
-	defer close(quit)
-
-	// 创建一个 Scheduler 对象
-	scheduler := NewScheduler(quit)
-	// 启动 Scheduler
-	scheduler.Run()
 }
