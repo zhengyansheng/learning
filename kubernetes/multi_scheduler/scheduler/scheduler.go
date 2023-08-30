@@ -100,6 +100,11 @@ func (s *Scheduler) scheduler(ctx context.Context) {
 		// 将 item 转换为 pod
 		pod := item.(*corev1.Pod)
 
+		if pod.DeletionTimestamp != nil {
+			// pod 已经被删除，不再调度
+			continue
+		}
+
 		// 执行调度
 		s.scheduleOne(ctx, pod)
 	}
