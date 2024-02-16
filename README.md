@@ -4,16 +4,18 @@
 
 [kubernetes 1.25.x 代码注解](https://github.com/zhengyansheng/kubernetes)
 
+
+
 - [X] client-go clients
 - [X] Informer (ListAndWatch/ Informer factory/ Indexer)
 - [X] controller(workqueue/ indexer/ informer)
 - [X] Leader election
 - [X] operator(nginx operator/elasticweb operator)
+- [Pod原地升级](./pod-inplace-upgrade/main.go)
 
 
-## Go
-- [ ] 数据结构
-- [ ] 算法
+`自定义K8S控制器`  
+[kubernetes hpa controller](https://github.com/AliyunContainerService/kubernetes-cronhpa-controller)  
 
 
 ## Etcd
