@@ -11,7 +11,7 @@
 - [X] controller(workqueue/ indexer/ informer)
 - [X] Leader election
 - [X] operator(nginx operator/elasticweb operator)
-- [Pod原地升级](./pod-inplace-upgrade/main.go)
+- [Pod原地升级](./kubernetes/pod-inplace-upgrade/main.go)
 
 
 `自定义K8S控制器`  
