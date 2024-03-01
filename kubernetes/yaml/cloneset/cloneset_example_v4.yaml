@@ -1,0 +1,22 @@
+apiVersion: apps.kruise.io/v1alpha1
+kind: CloneSet
+metadata:
+  labels:
+    app: my-cloneset
+  name: my-cloneset
+spec:
+  minReadySeconds: 15
+  scaleStrategy:
+    maxUnavailable: 1
+  replicas: 3
+  selector:
+    matchLabels:
+      app: my-cloneset
+  template:
+    metadata:
+      labels:
+        app: my-cloneset
+    spec:
+      containers:
+        - name: nginx
+          image: nginx:latest
