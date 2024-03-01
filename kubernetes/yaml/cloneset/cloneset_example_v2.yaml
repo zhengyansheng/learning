@@ -5,6 +5,9 @@ metadata:
     app: my-cloneset
   name: my-cloneset
 spec:
+  scaleStrategy:
+    podsToDelete:
+      - my-cloneset-lbvgr
   replicas: 3
   selector:
     matchLabels:

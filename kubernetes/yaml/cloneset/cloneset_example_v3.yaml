@@ -5,9 +5,9 @@ metadata:
     app: my-cloneset
   name: my-cloneset
 spec:
+  minReadySeconds: 15
   scaleStrategy:
-    podsToDelete:
-      - my-cloneset-lbvgr
+    maxUnavailable: 1
   replicas: 3
   selector:
     matchLabels:
@@ -19,4 +19,4 @@ spec:
     spec:
       containers:
         - name: nginx
-          image: nginx:alpine
+          image: nginx:latest

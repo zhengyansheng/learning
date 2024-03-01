@@ -58,6 +58,27 @@ patchedDeployment, err := clientset.AppsV1().Deployments(namespace).Patch(
 )
 ```
 
+```go
+patchData := fmt.Sprintf(`{
+  "spec": {
+    "template": {
+      "spec": {
+        "containers": [
+          {
+			"name": "nginx",
+            "image": "nginx:1.8"
+          }
+        ],
+		"affinity":null
+      }
+    }
+  }
+}`)
+_, err = clientset.AppsV1().Deployments("default").Patch(context.TODO(), "nginx-deployment", types.MergePatchType, []byte(patchData), metav1.PatchOptions{})
+```
+
+
+
 ### StrategicMergePatchType
 
 ```go

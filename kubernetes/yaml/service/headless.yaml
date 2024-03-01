@@ -2,24 +2,42 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: my-service
+  name: my-headless-service
 spec:
     selector:
       # 匹配 pod 的标签，这样 service 就知道要转发到哪个 pod 上
-      app: my-pod # This is the label of the pod
+      app: my-headless-pod # This is the label of the pod
     ports:
       - name: http
         port: 80
         protocol: TCP
         # 这里的 targetPort 是 pod 的端口，这个端口是 pod 的容器的端口
         targetPort: http # This is the name of the port in the pod
-      - name: https
-        port: 443
-        protocol: TCP
-        targetPort: 8433
     type: ClusterIP # 这里的 type 是 service 的类型，有四种类型，分别是 ClusterIP, NodePort, LoadBalancer, externalName
+    clusterIP: None # 这里的 clusterIP 是 service 的 IP，这里设置为 None，表示这个 service 是 headless service
     # 可选配置 sessionAffinity，这个配置是用来指定 session 的转发策略
     sessionAffinity: None # None, ClientIP 两种策略 # ClientIP 是指定根据客户端的 IP 来转发请求 # None 是随机转发
     sessionAffinityConfig:
       clientIP:
         timeoutSeconds: 10 # 和sessionAffinity: ClientIP搭配使用， 超时时间,超过这个时间就会重新转发请求
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: my-headless-deployment
+spec:
+    replicas: 2
+    selector:
+        matchLabels:
+          app: my-headless-pod
+    template:
+        metadata:
+          labels:
+              app: my-headless-pod
+        spec:
+          containers:
+          - name: my-container
+            image: nginx:1.7.9
+            ports:
+            - containerPort: 80
+              name: http

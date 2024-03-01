@@ -5,10 +5,15 @@ metadata:
     app: my-cloneset
   name: my-cloneset
 spec:
-  minReadySeconds: 15
-  scaleStrategy:
-    maxUnavailable: 1
-  replicas: 3
+  minReadySeconds: 10
+  updateStrategy:
+    # 控制器会优先尝试原地升级 Pod，如果不行再采用重建升级。
+    type: InPlaceOnly # InPlaceIfPossible | InPlaceOnly | ReCreate
+    inPlaceUpdateStrategy:
+      # 用户如果配置了 gracePeriodSeconds 这个字段，控制器在原地升级的过程中会先把 Pod status 改为 not-ready，然后等一段时间（gracePeriodSeconds），最后再去修改 Pod spec 中的镜像版本。
+      # 这样，就为 endpoints-controller 这些控制器留出了充足的时间来将 Pod 从 endpoints 端点列表中去除。
+      gracePeriodSeconds: 10
+  replicas: 2
   selector:
     matchLabels:
       app: my-cloneset
@@ -19,4 +24,4 @@ spec:
     spec:
       containers:
         - name: nginx
-          image: nginx:latest
+          image: nginx:alpine # alpine
