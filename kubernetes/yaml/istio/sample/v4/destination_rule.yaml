@@ -1,0 +1,13 @@
+apiVersion: networking.istio.io/v1alpha3
+kind: DestinationRule
+metadata:
+  name: nginx-dr
+spec:
+  host: nginx.ops.svc.cluster.local
+  subsets:
+    - name: app-group-v1
+      labels:
+        version: v1
+    - name: app-group-v2
+      labels:
+        version: v2

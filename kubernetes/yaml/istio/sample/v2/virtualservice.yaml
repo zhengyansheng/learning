@@ -1,0 +1,22 @@
+apiVersion: networking.istio.io/v1alpha3
+kind: VirtualService
+metadata:
+  name: nginx-vs
+spec:
+  hosts:
+    - "demo.ops.com"
+  gateways:
+    - gateway
+  http:
+    - match:
+        - headers:
+            end-user:
+              exact: jason # curl -s  -H "end-user: jason" demo.ops.com
+      route:
+        - destination:
+            host: nginx.ops.svc.cluster.local
+            subset: app-group-v1
+    - route:
+        - destination:
+            host: nginx.ops.svc.cluster.local
+            subset: app-group-v2

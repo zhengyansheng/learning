@@ -1,0 +1,31 @@
+# virtualservice http fault injection
+apiVersion: networking.istio.io/v1alpha3
+kind: VirtualService
+metadata:
+  name: httpbin
+spec:
+    hosts:
+    - httpbin.default.svc.cluster.local
+    http:
+    - fault: # 故障注入
+        delay: # 延迟
+            fixedDelay: 7s # 固定延迟7s
+            percent: 100 # 100%的流量 / 可以指定1就是1%的流量延迟
+        match:
+        - uri:
+            prefix: /delay
+        route:
+        - destination:
+            host: httpbin.default.svc.cluster.local
+            subset: v1
+    - fault: # 故障注入
+        abort: #  
+            httpStatus: 500 # 返回500
+            percent: 100 # 100%的流量
+        match:
+        - uri:
+            prefix: /status
+        route:
+        - destination:
+            host: httpbin.default.svc.cluster.local
+            subset: v1

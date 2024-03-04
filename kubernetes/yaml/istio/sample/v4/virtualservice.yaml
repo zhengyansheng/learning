@@ -1,0 +1,32 @@
+apiVersion: networking.istio.io/v1alpha3
+kind: VirtualService
+metadata:
+  name: nginx-vs
+spec:
+  hosts:
+    - "demo.ops.com"
+  gateways:
+    - gateway
+  http:
+    - fault:
+        delay:
+          fixedDelay: 3s
+          percentage:
+            value: 50
+        abort:
+          # httpStatus 字段用于指示要返回给调用方的HTTP状态代码
+          httpStatus: 500 # Internal Server Error
+          percentage:
+            value: 30
+      match:
+        - uri:
+            prefix: /
+      route:
+        - destination:
+            host: nginx.ops.svc.cluster.local
+            subset: app-group-v1
+          weight: 80
+        - destination:
+            host: nginx.ops.svc.cluster.local
+            subset: app-group-v2
+          weight: 20

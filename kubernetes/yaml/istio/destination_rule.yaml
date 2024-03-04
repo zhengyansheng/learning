@@ -1,0 +1,17 @@
+# istio DestinationRule yaml
+apiVersion: networking.istio.io/v1alpha3
+kind: DestinationRule
+metadata:
+  name: httpbin
+spec:
+    host: httpbin.default.svc.cluster.local
+    trafficPolicy: # 流量策略
+      loadBalancer: # 负载均衡策略
+        simple: ROUND_ROBIN # 轮询 / RANDOM 随机 / LEAST_CONN 最少连接
+    subsets: # 子集
+    - name: v1
+      labels:
+        version: v1
+    - name: v2
+      labels:
+        version: v2
