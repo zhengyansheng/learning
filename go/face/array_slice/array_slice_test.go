@@ -8,12 +8,12 @@ import (
 
 // 1. 数组和切片的定义和使用
 func TestDefineArraySlice(t *testing.T) {
-	fmt.Println("[数组]====================================")
-	defineArray()
-	fmt.Println("[切片1]====================================")
+	//fmt.Println("[数组]====================================")
+	//defineArray()
+	//fmt.Println("[切片1]====================================")
 	defineSlice1()
-	fmt.Println("[切片2]====================================")
-	defineSlice2()
+	//fmt.Println("[切片2]====================================")
+	//defineSlice2()
 }
 
 // 2. 数组是值类型，切片是引用类型
@@ -51,21 +51,27 @@ func defineSlice1() {
 	slice = append(slice, 1)
 	slice = append(slice, 2)
 	slice = append(slice, 3)
-
+	slice = append(slice, 4, 5)
+	//
 	fmt.Printf("cap: %d, slice: %v\n", cap(slice), slice)
 }
 
 func defineSlice2() {
+	//var array [3]int
+	//fmt.Printf("cap: %d, slice: %v\n", cap(array), array)
+
 	slice := make([]int, 3)
 	fmt.Printf("cap: %d, slice: %v\n", cap(slice), slice)
 	slice[0] = 5
 	slice[1] = 6
 	slice[2] = 7
-	slice = append(slice, 1)
-	slice = append(slice, 2)
-	slice = append(slice, 3)
-	slice = append(slice, 4)
 
+	slice = append(slice, 1)
+	slice[3] = 8
+	//slice = append(slice, 2)
+	//slice = append(slice, 3)
+	//slice = append(slice, 4)
+	//
 	fmt.Printf("cap: %d, slice: %v\n", cap(slice), slice)
 }
 
@@ -85,9 +91,12 @@ func scaleSlice() {
 	// 如果小于1024，每次扩容2倍
 	// 如果大于1024，每次扩容1.5倍
 
+	var capSlice []int
 	for i := 0; i < 1025; i++ {
 		slice = append(slice, i)
 		fmt.Printf("cap: %d, len: %d, slice: %v\n", cap(slice), len(slice), slice)
 		time.Sleep(time.Millisecond * 20)
+		capSlice = append(capSlice, cap(slice))
 	}
+	fmt.Printf("capSlice: %v\n", capSlice)
 }

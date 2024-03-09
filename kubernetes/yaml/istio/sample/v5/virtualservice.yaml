@@ -1,0 +1,20 @@
+apiVersion: networking.istio.io/v1alpha3
+kind: VirtualService
+metadata:
+  name: nginx-vs
+spec:
+  hosts:
+    - "demo.ops.com"
+  gateways:
+    - gateway
+  http:
+  - route:
+      - destination:
+          host: nginx.ops.svc.cluster.local
+          subset: app-group-v1
+        weight: 100
+    mirror: # 流量镜像
+      host: nginx.ops.svc.cluster.local
+      subset: app-group-v2
+    mirrorPercentage: # 流量镜像百分比
+      value: 100.0

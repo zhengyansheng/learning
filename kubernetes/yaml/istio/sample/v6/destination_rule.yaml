@@ -1,0 +1,39 @@
+apiVersion: networking.istio.io/v1alpha3
+kind: DestinationRule
+metadata:
+  name: nginx-dr
+spec:
+  host: nginx.ops.svc.cluster.local
+  trafficPolicy: # 流量策略
+    # 限流
+    connectionPool: # 连接池
+      # 该配置表示服务连接池最多接收一个TCP连接，HTTP请求pending状态的最大请求为1，后端请求的最大数量也为1，超过上述这些数量，则Proxy会自动为httpbin限流，返回503异常
+
+      http: # HTTP
+        http1MaxPendingRequests: 1 # 目标服务最多可以同时处理多少个HTTP请求，默认是1024个
+#        http2MaxRequests: 1 # 目标服务最多可以同时处理多少个HTTP/2请求，默认是1024个
+        maxRequestsPerConnection: 1 # 每个TCP连接可以被多少个请求复用，如果将这一参数设置为 1，则会禁止keepalive特性
+      tcp: # TCP
+        maxConnections: 1 # 最大连接数
+    # 熔断器
+    outlierDetection: # 异常检测
+      # 对于熔断outlierDetection而言
+      # 该配置表示每秒钟对服务实例进行一次熔断剔除检查，如果处理网络请求，连续返回1次5xx错误码则会被认定为不健康，要从可用服务列表中剔除3分钟。
+
+      # baseEjectionTime 指定了一个主机被隔离出去的时间，等于 baseEjectionTime 乘以该主机的驱逐次数
+      # 默认 30s
+      baseEjectionTime: 3m # 基础驱逐时间
+      consecutive5xxErrors: 1 # 连续5xx错误
+      interval: 1s # 间隔
+      # 检测到了某个主机异常时，如果到目前为止负载均衡池中还没有主机被隔离出去，将会立即隔离该异常主机；
+      # 如果已经有主机被隔离出去，就会检查当前隔离的主机数是否低于设定的阈值（通过Envoy中的 max_ejection_percent 指定），
+      # 如果当前被隔离的主机数量不超过该阈值，就将该主机隔离出去，否则不隔离
+      maxEjectionPercent: 100 # 最大驱逐百分比
+
+  subsets:
+    - name: app-group-v1
+      labels:
+        version: v1
+    - name: app-group-v2
+      labels:
+        version: v2
