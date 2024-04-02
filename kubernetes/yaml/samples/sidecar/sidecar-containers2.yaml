@@ -1,0 +1,46 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: myapp
+  labels:
+    app: myapp
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: myapp
+  template:
+    metadata:
+      labels:
+        app: myapp
+    spec:
+      containers:
+        - name: main-container
+          image: alpine:latest
+          command: ['sh', '-c', 'echo 【$(date +"%Y-%m-%d %H:%M:%S")】 main container >> /opt/debug.log && sleep 3600000']
+          volumeMounts:
+            - name: data
+              mountPath: /opt
+      initContainers:
+        - name: init-container01
+          image: busybox:latest
+          command: [ 'sh', '-c', 'echo 【$(date +"%Y-%m-%d %H:%M:%S")】 init container 01 >> /opt/debug.log && sleep 10' ]
+          volumeMounts:
+            - name: data
+              mountPath: /opt
+        - name: sidecar
+          image: busybox:latest
+          restartPolicy: Always
+          command: [ 'sh', '-c', 'echo 【$(date +"%Y-%m-%d %H:%M:%S")】 sidecar container >> /opt/debug.log && sleep 360000' ]
+          volumeMounts:
+            - name: data
+              mountPath: /opt
+        - name: init-container02
+          image: busybox:latest
+          command: [ 'sh', '-c', 'echo 【$(date +"%Y-%m-%d %H:%M:%S")】 init container 02 >> /opt/debug.log && sleep 10' ]
+          volumeMounts:
+            - name: data
+              mountPath: /opt
+      volumes:
+        - name: data
+          emptyDir: { }

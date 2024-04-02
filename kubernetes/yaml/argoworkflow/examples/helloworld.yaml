@@ -1,0 +1,16 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Workflow                  # new type of k8s spec
+metadata:
+  name: hello-world-2    # name of the workflow spec
+spec:
+  entrypoint: nginx-2          # invoke the whalesay template
+  templates:
+    - name: git              # name of the template
+      container:
+        image: nginx:latest
+        command: [ echo ]
+        args: [ "hello world" ]
+        resources: # limit the resources
+          limits:
+            memory: 32Mi
+            cpu: 100m

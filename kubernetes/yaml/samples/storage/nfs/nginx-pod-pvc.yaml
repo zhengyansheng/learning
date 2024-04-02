@@ -1,0 +1,28 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: my-nfs-pvc
+spec:
+  accessModes:
+    - ReadWriteMany
+  storageClassName: managed-nfs-storage 
+  resources:
+    requests:
+      storage: 20Mi 
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: nginx-with-nfs
+spec:
+  containers:
+    - name: nginx
+      image: nginx:latest
+      volumeMounts:
+        - name: nfs-persistent-storage
+          mountPath: /usr/share/nginx/html
+  volumes:
+    - name: nfs-persistent-storage
+      persistentVolumeClaim:
+        claimName: my-nfs-pvc
+

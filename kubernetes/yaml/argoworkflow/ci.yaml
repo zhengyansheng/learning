@@ -1,0 +1,68 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Workflow
+metadata:
+  generateName: ci-pipeline-
+spec:
+  entrypoint: ci-pipeline
+  templates:
+    - name: ci-pipeline
+      steps:
+        - - name: git-clone
+            template: git-clone
+        - - name: unit-test
+            template: unit-test
+        - - name: maven-build
+            template: maven-build
+        - - name: build-image
+            template: build-image
+            arguments:
+              parameters:
+                - name: image-name
+                  value: my-image:latest
+        - - name: push-image
+            template: push-image
+            arguments:
+              parameters:
+                - name: image-name
+                  value: my-image:latest
+      nodeSelector:
+        kubernetes.io/hostname: <your-preferred-node-name>
+      affinity:
+        podAntiAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            - labelSelector:
+                matchExpressions:
+                  - key: workflow
+                    operator: In
+                    values:
+                      - ci-pipeline
+              topologyKey: "kubernetes.io/hostname"
+    - name: git-clone
+      container:
+        image: alpine/git
+        command: [git, clone, <repository-url>, /workspace]
+    - name: unit-test
+      container:
+        image: <your-unit-test-image>
+        command: [sh, -c]
+        args: ["cd /workspace && <your-unit-test-command>"]
+    - name: maven-build
+      container:
+        image: maven:3.6.3-jdk-11-slim
+        command: [mvn, package]
+        workingDir: /workspace
+    - name: build-image
+      inputs:
+        parameters:
+          - name: image-name
+      container:
+        image: docker:19.03.13
+        command: [docker, build, -t, "{{inputs.parameters.image-name}}", .]
+        workingDir: /workspace
+    - name: push-image
+      inputs:
+        parameters:
+          - name: image-name
+      container:
+        image: docker:19.03.13
+        command: [docker, push, "{{inputs.parameters.image-name}}"]

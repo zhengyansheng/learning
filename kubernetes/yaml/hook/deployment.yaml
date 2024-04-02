@@ -1,0 +1,29 @@
+# generator nginx deployment 3 replicas and prestop , termiantionGracePeriodSeconds, poststart
+# hook
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx-deployment
+  labels:
+    app: nginx
+spec:
+    replicas: 1
+    selector:
+        matchLabels:
+          app: nginx
+    template:
+        metadata:
+          labels:
+              app: nginx
+        spec:
+          containers:
+          - name: nginx
+            # 1.14.2
+            image: nginx:latest
+            ports:
+            - containerPort: 80
+            lifecycle:
+              preStop:
+                  exec:
+                    command: ["/bin/sh", "-c", "echo pre stop && curl -s 192.168.43.149:8888/prestop && sleep 15"]
+          terminationGracePeriodSeconds: 10

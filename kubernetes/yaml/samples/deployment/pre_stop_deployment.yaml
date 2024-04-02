@@ -1,0 +1,45 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: nginx
+  template:
+    metadata:
+      labels:
+        app: nginx
+    spec:
+      containers:
+        - name: nginx
+          #image: nginx:1.14.2
+          image: nginx:latest # 1.14.2
+          ports:
+            - containerPort: 80
+          volumeMounts:
+            - name: nfs-persistent-storage
+              mountPath: /tmp
+          lifecycle:
+            preStop:
+              exec:
+                command: ["/bin/sh", "-c", "sleep 50"]
+      volumes:
+        - name: nfs-persistent-storage
+          persistentVolumeClaim:
+            claimName: debuglog-nfs-pvc
+      terminationGracePeriodSeconds: 45
+
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: debuglog-nfs-pvc
+spec:
+  accessModes:
+    - ReadWriteMany
+  storageClassName: managed-nfs-storage
+  resources:
+    requests:
+      storage: 20Mi

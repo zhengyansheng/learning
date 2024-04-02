@@ -1,0 +1,30 @@
+# 在下面这个yaml中添加prestop的lifecycle
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx-deployment
+  labels:
+    app: nginx
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: nginx
+  template:
+    metadata:
+      labels:
+        app: nginx
+    spec:
+      containers:
+        - name: nginx
+          image: nginx:latest # latest | 1.14.2
+          ports:
+            - containerPort: 80
+          lifecycle: # 添加 preStop 生命周期钩子
+            preStop:
+              exec:
+                command: [ "/bin/sh", "-c", "nginx -s quit; sleep 20" ]
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 1
