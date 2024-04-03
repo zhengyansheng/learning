@@ -1,7 +1,7 @@
 # 文档
 
-
 ## 自定义调度器的多种方式
+
 - configure with KubeSchedulerConfiguration
 - add Plugins of Scheduling Framework
 - add Extenders
@@ -9,14 +9,12 @@
 
 `https://github.com/kubernetes-sigs/kube-scheduler-simulator`
 
-
 ## Patch Type
 
 - JSONPatchType
 - MergePatchType
 - StrategicMergePatchType
 - ApplyPatchType
-
 
 ### JSONPatchType
 
@@ -37,8 +35,8 @@ patchedDeployment, err := clientset.AppsV1().Deployments(namespace).Patch(
 ```
 
 ### MergePatchType
-> Merge Patch 适用于简单的合并场景，其中你只关心要更新的字段，而不需要考虑字段的内部结构。
 
+> Merge Patch 适用于简单的合并场景，其中你只关心要更新的字段，而不需要考虑字段的内部结构。
 
 ```go
 // Define the Merge Patch data
@@ -77,12 +75,10 @@ patchData := fmt.Sprintf(`{
 _, err = clientset.AppsV1().Deployments("default").Patch(context.TODO(), "nginx-deployment", types.MergePatchType, []byte(patchData), metav1.PatchOptions{})
 ```
 
-
-
 ### StrategicMergePatchType
 
 ```go
-	// Define the Strategic Merge Patch data
+// Define the Strategic Merge Patch data
 	patchData := []byte(`
 {
   "spec": {
@@ -102,10 +98,11 @@ _, err = clientset.AppsV1().Deployments("default").Patch(context.TODO(), "nginx-
 ```
 
 ### ApplyPatchType
+
 > Apply Patch 适用于你想要将部分更新应用于资源对象的场景，而不是整个对象。
 
 ```go
-	// Define the Apply Patch data
+// Define the Apply Patch data
 	patchData := []byte(`
 spec:
   replicas: 3
@@ -120,3 +117,4 @@ spec:
 		metav1.PatchOptions{},
 	)
 ```
+
