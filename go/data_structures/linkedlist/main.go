@@ -19,13 +19,13 @@ func (l *LinkedList) Append(n int) {
 		l.Head = newNode.Head
 		return
 	}
-	
+
 	currentNode := l.Head
 	for currentNode.Next != nil {
 		currentNode = currentNode.Next
 	}
 	currentNode.Next = newNode.Head
-	
+
 }
 
 func (l *LinkedList) Print() {

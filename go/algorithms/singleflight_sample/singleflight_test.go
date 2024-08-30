@@ -6,7 +6,7 @@ import (
 	"sync/atomic"
 	"testing"
 	"time"
-	
+
 	"golang.org/x/sync/singleflight"
 )
 
@@ -21,7 +21,7 @@ func TestSingleFlight(t *testing.T) {
 	}{
 		{"single flight", 1000, "article: 1"},
 	}
-	
+
 	for _, tc := range testCases {
 		result, err := singleFlightFunc(tc.concurrent)
 		if err != nil {
@@ -40,12 +40,12 @@ func singleFlightFunc(concurrent int) (string, error) {
 		now   = time.Now()
 		s     = &singleflight.Group{}
 	)
-	
+
 	for i := 0; i < concurrent; i++ {
 		wg.Add(1)
 		go func() {
 			defer wg.Done()
-			
+
 			// 模拟并发请求
 			res, _ := getArticleForSingleFlight(s, count, 1)
 			if res != "article: 1" {
@@ -69,6 +69,6 @@ func getArticle(count int32, i int) (string, error) {
 	// 假设这里会对数据进行调用，模拟不同并发下耗时不同
 	atomic.AddInt32(&count, 1) // 原子操作+1
 	time.Sleep(time.Duration(count) * time.Millisecond)
-	
+
 	return fmt.Sprintf("article: %d", i), nil
 }
