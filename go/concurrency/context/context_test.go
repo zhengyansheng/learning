@@ -13,6 +13,7 @@ type key string
 const requestIDKey = key("requestID")
 
 func TestContext(t *testing.T) {
+
 	t.Run("WithTimeout", func(t *testing.T) {
 		// 创建一个超时context
 		ctx, cancel := context.WithTimeout(context.Background(), time.Second*3)
@@ -24,6 +25,18 @@ func TestContext(t *testing.T) {
 		go WorkerFuncTimeout(ctx, done)
 
 		t.Logf("done: %v", <-done)
+	})
+
+	t.Run("WithTimeout2", func(t *testing.T) {
+
+		ctx, cancel := context.WithTimeout(context.TODO(), time.Second*2)
+		defer cancel()
+
+		select {
+		case <-ctx.Done():
+			t.Log(ctx.Err())
+		}
+
 	})
 
 	t.Run("WithCancel", func(t *testing.T) {
@@ -46,6 +59,20 @@ func TestContext(t *testing.T) {
 
 	})
 
+	t.Run("WithCancel", func(t *testing.T) {
+		ctx, cancel := context.WithCancel(context.Background())
+
+		go func() {
+			time.Sleep(time.Second * 1)
+			cancel()
+		}()
+
+		select {
+		case <-ctx.Done():
+			t.Log(ctx.Err())
+		}
+	})
+
 	t.Run("WithValue", func(t *testing.T) {
 		// 创建一个超时context
 		ctx := context.WithValue(context.Background(), requestIDKey, "12345")
@@ -56,6 +83,24 @@ func TestContext(t *testing.T) {
 		// 等待worker完成
 		time.Sleep(1 * time.Second)
 		t.Log("Done")
+	})
+
+	t.Run("WithValue2", func(t *testing.T) {
+		step1 := func(ctx context.Context) context.Context {
+			return context.WithValue(ctx, "name", "zhengyansheng")
+		}
+
+		step2 := func(ctx context.Context) context.Context {
+			return context.WithValue(ctx, "age", 20)
+		}
+
+		step3 := func(ctx context.Context) {
+			t.Logf("->name: %v", ctx.Value("name"))
+			t.Logf("->age: %v", ctx.Value("age"))
+		}
+
+		ctx := context.Background()
+		step3(step2(step1(ctx)))
 	})
 
 	t.Run("WithDeadline", func(t *testing.T) {
