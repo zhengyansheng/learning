@@ -1,4 +1,4 @@
-package singleflight_sample
+package singleflight
 
 import (
 	"fmt"
@@ -11,7 +11,7 @@ import (
 )
 
 /*
-	并发请求中，用singleFlight可以避免缓存击穿，减少对数据库的压力
+并发请求中，用singleFlight可以避免缓存击穿，减少对数据库的压力
 */
 func TestSingleFlight(t *testing.T) {
 	testCases := []struct {
