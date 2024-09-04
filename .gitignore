@@ -292,3 +292,5 @@ $RECYCLE.BIN/
 .DS_Store
 .idea
 .idea/*
+
+node_modules/*

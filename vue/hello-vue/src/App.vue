@@ -1,30 +1,32 @@
 <template>
 
   <div class="app-container">
-    <h1>App根组件</h1>
-    <router-link to="/home">首页</router-link>
-    <router-link to="/about">关于</router-link>
+<!--    <h1>App根组件</h1>-->
+<!--    <router-link to="/home" >首页</router-link>-->
+    <router-link :to="{name: 'root'}" >首页</router-link>
+<!--    <router-link to="/about" v-slot="{naviqate}">-->
+<!--      <button @click="naviqate" @keypress.enter="naviqate">关于</button>-->
+<!--    </router-link>-->
+    <router-link :to="{name: 'about'}">关于</router-link>
+    <router-link :to="{name: 'menu'}">菜单</router-link>
+    <router-link :to="{name: 'axios'}">axios</router-link>
     <hr>
     <router-view></router-view>
   </div>
 
-<!--  <HomePage/>-->
-<!--  <AboutPage/>-->
+
 <!--  <img alt="Vue logo" src="./assets/logo.png">-->
 <!--  <HelloWorld msg="Welcome to Your Vue.js App"/>-->
 </template>
 
 <script>
 // import HelloWorld from './components/HelloWorld.vue'
-// import HomePage from './components/HomePage.vue'
-// import AboutPage from './components/AboutPage.vue'
+
 
 export default {
   name: 'App',
   components: {
     // HelloWorld,
-    // HomePage,
-    // AboutPage,
   }
 }
 </script>

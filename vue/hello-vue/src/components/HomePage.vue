@@ -1,8 +1,6 @@
 <template>
 
   <div class="home-container">
-    <h3>Home组件</h3>
-
     <el-row>
     <el-button>按钮组件</el-button>
     <el-button type="primary">主要按钮</el-button>
@@ -113,6 +111,16 @@
     </el-option>
   </el-select>
 
+  <hr>
+  <el-switch v-model="open" active-text="打开" inactive-text="关闭"></el-switch>
+  <br>
+
+  <el-switch v-model="open2" disabled></el-switch>
+  <el-switch v-model="open2" loading></el-switch>
+  <el-switch v-model="open3" loading></el-switch>
+  <br>
+
+
 
 </template>
 
@@ -162,6 +170,10 @@ const data_select = reactive({
   ],
   value: ""
 })
+
+const open = ref(true)
+const open2 = ref(true)
+const open3 = ref(false)
 
 
 </script>
