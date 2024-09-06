@@ -1,0 +1,25 @@
+// 指定当前proto语法的版本 有2和3
+syntax = "proto3";
+
+//// path表示生成go文件的存放地址，会自动生成目录的；name表示生成go文件所属的包名
+//option go_package = "path;name";
+
+option go_package = "../service;service";
+
+// 指定文件生成的package
+package service;
+
+// 消息 传输的对象
+message ProductRequest{
+  int32 prod_id = 1;
+}
+
+message ProductResponse{
+  int32 pro_stock = 1;
+}
+
+// 定义服务主体
+service ProdService{
+  // 定义方法
+  rpc GetProductStock(ProductRequest) returns(ProductResponse);
+}

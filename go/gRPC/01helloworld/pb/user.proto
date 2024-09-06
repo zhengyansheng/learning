@@ -1,0 +1,41 @@
+// 指定当前proto语法的版本 有2和3
+syntax = "proto3";
+
+//// path表示生成go文件的存放地址，会自动生成目录的；name表示生成go文件所属的包名
+//option go_package = "path;name";
+
+option go_package = "../service;service";
+
+// 指定文件生成的package
+package service;
+
+// 消息 传输的对象
+message UserRequest{
+  string username = 1;
+  int32 age = 2;
+  string email = 3;
+  optional string password = 4;  // 可选 生成指针
+  repeated string addresses = 5; // 切片
+}
+
+message UserResponse{
+  string username = 1;
+  int32 age = 2;
+  string email = 3;
+  optional string password = 4;  // 可选 生成指针
+  repeated string addresses = 5; // 切片
+}
+
+// 消息嵌套
+message PersonInfo{
+  message Person{
+    string username = 1;
+    int32 age = 2;
+    repeated int32  weight = 3;
+  }
+  repeated Person info = 1;
+}
+
+message PersonMessage{
+  PersonInfo.Person info = 1;
+}
