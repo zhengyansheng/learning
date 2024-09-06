@@ -23,7 +23,8 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
-	ProdService_GetProductStock_FullMethodName = "/service.ProdService/GetProductStock"
+	ProdService_GetProductStock_FullMethodName          = "/service.ProdService/GetProductStock"
+	ProdService_UpdateProductStockStream_FullMethodName = "/service.ProdService/UpdateProductStockStream"
 )
 
 // ProdServiceClient is the client API for ProdService service.
@@ -34,6 +35,8 @@ const (
 type ProdServiceClient interface {
 	// 定义方法
 	GetProductStock(ctx context.Context, in *ProductRequest, opts ...grpc.CallOption) (*ProductResponse, error)
+	// 客户端流
+	UpdateProductStockStream(ctx context.Context, opts ...grpc.CallOption) (grpc.ClientStreamingClient[ProductRequest, ProductResponse], error)
 }
 
 type prodServiceClient struct {
@@ -54,6 +57,19 @@ func (c *prodServiceClient) GetProductStock(ctx context.Context, in *ProductRequ
 	return out, nil
 }
 
+func (c *prodServiceClient) UpdateProductStockStream(ctx context.Context, opts ...grpc.CallOption) (grpc.ClientStreamingClient[ProductRequest, ProductResponse], error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	stream, err := c.cc.NewStream(ctx, &ProdService_ServiceDesc.Streams[0], ProdService_UpdateProductStockStream_FullMethodName, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	x := &grpc.GenericClientStream[ProductRequest, ProductResponse]{ClientStream: stream}
+	return x, nil
+}
+
+// This type alias is provided for backwards compatibility with existing code that references the prior non-generic stream type by name.
+type ProdService_UpdateProductStockStreamClient = grpc.ClientStreamingClient[ProductRequest, ProductResponse]
+
 // ProdServiceServer is the server API for ProdService service.
 // All implementations must embed UnimplementedProdServiceServer
 // for forward compatibility.
@@ -62,6 +78,8 @@ func (c *prodServiceClient) GetProductStock(ctx context.Context, in *ProductRequ
 type ProdServiceServer interface {
 	// 定义方法
 	GetProductStock(context.Context, *ProductRequest) (*ProductResponse, error)
+	// 客户端流
+	UpdateProductStockStream(grpc.ClientStreamingServer[ProductRequest, ProductResponse]) error
 	mustEmbedUnimplementedProdServiceServer()
 }
 
@@ -74,6 +92,9 @@ type UnimplementedProdServiceServer struct{}
 
 func (UnimplementedProdServiceServer) GetProductStock(context.Context, *ProductRequest) (*ProductResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetProductStock not implemented")
+}
+func (UnimplementedProdServiceServer) UpdateProductStockStream(grpc.ClientStreamingServer[ProductRequest, ProductResponse]) error {
+	return status.Errorf(codes.Unimplemented, "method UpdateProductStockStream not implemented")
 }
 func (UnimplementedProdServiceServer) mustEmbedUnimplementedProdServiceServer() {}
 func (UnimplementedProdServiceServer) testEmbeddedByValue()                     {}
@@ -114,6 +135,13 @@ func _ProdService_GetProductStock_Handler(srv interface{}, ctx context.Context, 
 	return interceptor(ctx, in, info, handler)
 }
 
+func _ProdService_UpdateProductStockStream_Handler(srv interface{}, stream grpc.ServerStream) error {
+	return srv.(ProdServiceServer).UpdateProductStockStream(&grpc.GenericServerStream[ProductRequest, ProductResponse]{ServerStream: stream})
+}
+
+// This type alias is provided for backwards compatibility with existing code that references the prior non-generic stream type by name.
+type ProdService_UpdateProductStockStreamServer = grpc.ClientStreamingServer[ProductRequest, ProductResponse]
+
 // ProdService_ServiceDesc is the grpc.ServiceDesc for ProdService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -126,6 +154,12 @@ var ProdService_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _ProdService_GetProductStock_Handler,
 		},
 	},
-	Streams:  []grpc.StreamDesc{},
+	Streams: []grpc.StreamDesc{
+		{
+			StreamName:    "UpdateProductStockStream",
+			Handler:       _ProdService_UpdateProductStockStream_Handler,
+			ClientStreams: true,
+		},
+	},
 	Metadata: "product.proto",
 }

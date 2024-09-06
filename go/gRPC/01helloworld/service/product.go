@@ -2,7 +2,9 @@ package service
 
 import (
 	"context"
+	"google.golang.org/grpc"
 	"google.golang.org/protobuf/types/known/anypb"
+	"io"
 	"log"
 )
 
@@ -28,6 +30,30 @@ func (p *productService) GetProductStock(ctx context.Context, in *ProductRequest
 }
 
 func (p *productService) mustEmbedUnimplementedProdServiceServer() {}
+
+func (p *productService) UpdateProductStockStream(stream grpc.ClientStreamingServer[ProductRequest, ProductResponse]) error {
+	var counter int
+	for {
+		recv, err := stream.Recv()
+		if err != nil {
+			if err == io.EOF {
+				return nil
+			}
+			return err
+		}
+		log.Printf("server recv steam: %v, counter: %d\n", recv.ProdId, counter)
+		counter++
+		if counter > 10 {
+			p := &ProductResponse{ProStock: recv.ProdId}
+			if err := stream.SendAndClose(p); err != nil {
+				return err
+			}
+			return nil
+		}
+	}
+
+	//return status.Errorf(codes.Unimplemented, "method UpdateProductStockStream not implemented")
+}
 
 func (p *productService) getStockById(id int32) int32 {
 	log.Printf("id: %v\n", id)
