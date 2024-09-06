@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"google.golang.org/protobuf/types/known/anypb"
 	"log"
 )
 
@@ -14,7 +15,16 @@ func NewProduct() *productService {
 
 func (p *productService) GetProductStock(ctx context.Context, in *ProductRequest) (*ProductResponse, error) {
 	stock := p.getStockById(in.ProdId)
-	return &ProductResponse{ProStock: stock}, nil
+	u := UserRequest{
+		Username: "zhengyansheng",
+		Age:      18,
+		Email:    "zhengyscn@gmail.com",
+	}
+	data1 := Content{
+		Msg: "hello ......",
+	}
+	dataContent, _ := anypb.New(&data1)
+	return &ProductResponse{ProStock: stock, User: &u, Data: dataContent}, nil
 }
 
 func (p *productService) mustEmbedUnimplementedProdServiceServer() {}

@@ -4,7 +4,7 @@ syntax = "proto3";
 //// path表示生成go文件的存放地址，会自动生成目录的；name表示生成go文件所属的包名
 //option go_package = "path;name";
 
-option go_package = "../service;service";
+option go_package = "./service;service";
 
 // 指定文件生成的package
 package service;

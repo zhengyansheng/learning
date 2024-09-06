@@ -3,8 +3,10 @@ syntax = "proto3";
 
 //// path表示生成go文件的存放地址，会自动生成目录的；name表示生成go文件所属的包名
 //option go_package = "path;name";
+import "user.proto";
+import "google/protobuf/any.proto";
 
-option go_package = "../service;service";
+option go_package = "./service;service";
 
 // 指定文件生成的package
 package service;
@@ -14,8 +16,15 @@ message ProductRequest{
   int32 prod_id = 1;
 }
 
+message Content{
+  string msg = 1;
+}
+
+
 message ProductResponse{
   int32 pro_stock = 1;
+  UserRequest user = 2;
+  google.protobuf.Any data = 3;
 }
 
 // 定义服务主体
