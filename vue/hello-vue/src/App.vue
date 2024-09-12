@@ -1,40 +1,30 @@
 <template>
 
   <div class="app-container">
-<!--    <h1>App根组件</h1>-->
-<!--    <router-link to="/home" >首页</router-link>-->
-    <router-link :to="{name: 'root'}" >首页</router-link>
-<!--    <router-link to="/about" v-slot="{naviqate}">-->
-<!--      <button @click="naviqate" @keypress.enter="naviqate">关于</button>-->
-<!--    </router-link>-->
-    <router-link :to="{name: 'about'}">关于</router-link>
-    <router-link :to="{name: 'menu'}">菜单</router-link>
+    <router-link :to="{name: 'vue_template'}">02.Vue.js 模版应用</router-link>
+    <router-link :to="{name: 'method_cal'}">03.组件的方法和计算属性</router-link>
+    <router-link :to="{name: 'v_model'}">04.表单双向绑定</router-link>
+    <router-link :to="{name: 'user_interactive'}">05.处理用户交互</router-link>
+    <router-link :to="{name: 'home'}" >element plus 1</router-link>
+    <router-link :to="{name: 'about'}">element plus 2</router-link>
+    <router-link :to="{name: 'menu'}">element plus 3</router-link>
     <router-link :to="{name: 'axios'}">axios</router-link>
+
     <hr>
     <router-view></router-view>
   </div>
 
-
-<!--  <img alt="Vue logo" src="./assets/logo.png">-->
-<!--  <HelloWorld msg="Welcome to Your Vue.js App"/>-->
 </template>
 
 <script>
-// import HelloWorld from './components/HelloWorld.vue'
 
-
-export default {
-  name: 'App',
-  components: {
-    // HelloWorld,
-  }
-}
 </script>
 
 <style scoped>
 
 .app-container {
-  text-align: center;
+  //text-align: center;
+  padding-left: 5px;
   color: #000;
 }
 

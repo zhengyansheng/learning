@@ -2134,7 +2134,7 @@
 
 "axios@*", "axios@^1.7.7":
   "integrity" "sha512-S4kL7XrjgBmvdGut0sN3yJxqYzrDOnivkBiN0OFs6hLiUam3UPvswUo0kqGyhqUZGEOytHyumEdXsAkgCOUf3Q=="
-  "resolved" "https://registry.npmmirror.com/axios/-/axios-1.7.7.tgz"
+  "resolved" "http://npm.ixiaochuan.cn/axios/-/axios-1.7.7.tgz"
   "version" "1.7.7"
   dependencies:
     "follow-redirects" "^1.15.6"

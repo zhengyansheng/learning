@@ -7,39 +7,12 @@ import VueAxios from "vue-axios";
 import ElementPlus from 'element-plus'
 import 'element-plus/dist/index.css'
 
+import mainRouter from "./routers/router.js"
 
-const routers = [
-    {
-        path: "/",
-        redirect: '/home',
-        name: "root"
-    },
-    {
-        path: "/home",
-        component: () => import('./components/HomePage.vue'),
-        name: "home"
-    },
-    {
-        path: "/about",
-        component: () => import('./components/AboutPage.vue'),
-        name: "about"
-    },
-    {
-        path: "/menu",
-        component: () => import('./components/MenuPage.vue'),
-        name: "menu"
-    },
-    {
-        path: "/axios",
-        component: () => import('./components/AxiosPage.vue'),
-        name: "axios"
-    },
-]
-
-
+// 定义路由
 const router = createRouter({
     history: createWebHashHistory(),
-    routes: routers,
+    routes: mainRouter,
 })
 
 const app = createApp(App)
