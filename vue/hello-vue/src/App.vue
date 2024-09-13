@@ -5,6 +5,7 @@
     <router-link :to="{name: 'method_cal'}">03.组件的方法和计算属性</router-link>
     <router-link :to="{name: 'v_model'}">04.表单双向绑定</router-link>
     <router-link :to="{name: 'user_interactive'}">05.处理用户交互</router-link>
+    <router-link :to="{name: 'component_api'}">06.精通组件和组合API</router-link>
     <router-link :to="{name: 'home'}" >element plus 1</router-link>
     <router-link :to="{name: 'about'}">element plus 2</router-link>
     <router-link :to="{name: 'menu'}">element plus 3</router-link>

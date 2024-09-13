@@ -45,6 +45,11 @@ const router = [
         component: () => import('../components/05user-interactive.vue'),
         name: "user_interactive"
     },
+    {
+        path: "/06component_api",
+        component: () => import('../components/06component_api.vue'),
+        name: "component_api"
+    },
 ]
 
 export default router

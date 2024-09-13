@@ -35,12 +35,33 @@
 
     <div class="right">
       <h2>练习1</h2>
-      商品名称: <input type="text"><br>
-      <button>减一个</button> 购买数量: {{ data.number }}
-      <button>加一个</button>
-      <button>加入购物车</button>
+      商品名称: <input type="text" v-model="data.name"><br>
+      <button @click="sub">减一个</button> 购买数量: {{ data.number }}
+      <button @click="add2">加一个</button>
+      <button @click="addpush">加入购物车</button>
       <br>
-      洗衣机
+      {{data.name}} X{{ data.number}}
+      <hr>
+
+      <h2>练习2</h2>
+      <p>{{ data2.msg }}</p>
+      <button v-on:click="handleClick()">单击按钮</button>
+      <button @click="handleClick()">单击按钮</button>
+      <br>
+      <select>
+        <option>Python</option>
+        <option>Go</option>
+        <option>Java</option>
+      </select>
+
+      <p>表单提交</p>
+
+      <input type="checkbox" v-model="data2.isAgree" value="data2.isAgree"> 同意本站协议 <br>
+      <button :disabled="data2.isDisabled">注册</button>
+
+      {{ data2 }}
+
+
 
     </div>
   </div>
@@ -98,9 +119,56 @@ watch(goods, (newValue, oldValue) => {
 
 // trains
 const data = reactive({
+  name: "",
   number: 0,
+  isMax: false,
+  list: [],
 
 })
+
+const add2 = () => {
+  data.number++
+}
+
+const sub = () => {
+  data.number--
+}
+
+const addpush = () => {
+  data.list.push({name: data.name, number: data.number})
+  console.log(data.list)
+}
+
+watch(data, (newValue, oldValue) => {
+  console.log(newValue.number, oldValue.number)
+  if (newValue.number > 10) {
+    data.isMax = true
+  }
+  if (newValue.number < 0) {
+    data.number = 0
+  }
+})
+
+// trains2
+const data2 = reactive({
+  msg: "注册用户",
+  isDisabled: true,
+  isAgree: false,
+})
+
+watch(data2, (newValue, oldValue) => {
+  console.log(oldValue)
+  if(newValue.isAgree) {
+    data2.isDisabled = false
+  } else {
+    data2.isDisabled = true
+  }
+})
+
+const handleClick = () => {
+  console.log("btn is clicked")
+}
+
 
 
 </script>
