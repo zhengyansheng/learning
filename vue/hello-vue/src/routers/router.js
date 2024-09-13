@@ -50,6 +50,21 @@ const router = [
         component: () => import('../components/06component_api.vue'),
         name: "component_api"
     },
+    {
+        path: "/login",
+        component: () => import('../components/LoginIndex.vue'),
+        name: "login"
+    },
+    {
+        path: "/register",
+        component: () => import('../components/RegisterIndex.vue'),
+        name: "register"
+    },
+    {
+        path: "/dashboard",
+        component: () => import('../components/home/DashboardIndex.vue'),
+        name: "dashboard"
+    },
 ]
 
 export default router

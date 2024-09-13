@@ -1,0 +1,57 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: shark
+  labels:
+    app: shark
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: shark
+  strategy:
+    rollingUpdate:
+      maxSurge: 25%
+      maxUnavailable: 0
+    type: RollingUpdate
+  template:
+    metadata:
+      labels:
+        app: shark
+        version: v1.0
+    spec:
+      containers:
+        - name: shark
+          image: zhengyscn/nginx:v1.0
+          imagePullPolicy: IfNotPresent
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: shark
+spec:
+  type: ClusterIP
+  selector:
+    app: shark
+  ports:
+    - port: 80
+      targetPort: 80
+
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: shark
+spec:
+  rules:
+  - host: www.guiyin.com
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: shark
+            port:
+              number: 80

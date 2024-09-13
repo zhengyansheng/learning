@@ -1,6 +1,9 @@
 <template>
 
   <div class="app-container">
+    <router-link :to="{name: 'login'}">登录</router-link>
+    <router-link :to="{name: 'register'}">注册</router-link>
+    <router-link :to="{name: 'dashboard'}">大盘</router-link>
     <router-link :to="{name: 'vue_template'}">02.Vue.js 模版应用</router-link>
     <router-link :to="{name: 'method_cal'}">03.组件的方法和计算属性</router-link>
     <router-link :to="{name: 'v_model'}">04.表单双向绑定</router-link>
