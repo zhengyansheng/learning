@@ -19,3 +19,7 @@
 
 ```
 
+
+```bash
+# go build -gcflags -m main.go
+```
