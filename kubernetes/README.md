@@ -1,4 +1,12 @@
-# 文档
+# Kubernetes
+
+- [kubernetes 1.25.x 代码注解](https://github.com/zhengyansheng/kubernetes)
+- [client-go](./kubernetes/clients)
+- [Informer](./kubernetes/informers)
+- [Leader election](kubernetes/leader-election)
+- [Pod原地升级](./kubernetes/pod-inplace-upgrade/main.go)
+- [自定义控制器cron hpa controller](https://github.com/AliyunContainerService/kubernetes-cronhpa-controller)
+
 
 ## 自定义调度器的多种方式
 
@@ -118,3 +126,4 @@ spec:
 	)
 ```
 
+- [Informer 为什么要引入 Resync 机制](https://github.com/cloudnativeto/sig-kubernetes/issues/11)  
