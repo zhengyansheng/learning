@@ -7,6 +7,7 @@
 - [ ] 内存逃逸
 
 ## 数据结构
+- [ ] 内存管理
 - [ ] array 和 slice 的区别
 - [ ] slice 的扩容机制
 - [ ] map 和 sync.Map 区别
@@ -14,7 +15,6 @@
 - [ ] channel底层的实现
 - [ ] 堆(heap) 栈(stack)的区别
 - [ ] channel是分配在堆上还是栈上 为什么？
-
 - [ ] make 和 new 区别
 
 ## 分布式
