@@ -7,7 +7,7 @@
 <img src="./images/gmp_mode.png" alt="GMP调度模型" height="400">
 
 
-### 三个资源的缩写
+### 三个实体的缩写
 
 - Goroutine  
 go 关键字执行的函数，要执行的业务代码，统称为 goroutine
@@ -15,10 +15,17 @@ go 关键字执行的函数，要执行的业务代码，统称为 goroutine
 - Machine  
 内核的物理线程，Go语言在此基础上进行了封装  
 正常M的数量要大于P的数量
+M才是真正执行G的载体
 
 - Processor  
-逻辑处理器 或者 goroutine的调度器，负责调度G的执行；  
+逻辑处理器 或者 goroutine的调度器，负责调度G的执行； 
+每个P上都有一个runqueue队列
 正常P的数量等于CPU的数量
+
+### local runq 和 global runq
+
+- local runq  本地队列，每个P上都有一个runq，最多可以存放256个G，主要是在这里获取G不需要加锁
+- global runq 全局队列，从这里获取G时需要加锁和解锁
 
 
 ### 执行G的过程
@@ -31,8 +38,64 @@ P是负责调度G的，创建G时会先把G放入P的一个本地队列中，M�
 
 ### work stealing 工作窃取
 
-如果P上队列中的G被执行完了，那么P可以通过窃取的方式，从其其它P上拿取一半的G放入到自已的本地队列中，
-在继续调度执行G
+如果 P1 队列中的 G 都被执行完了，那么 P1 可以通过工作窃取的方式，从其它比如 P2 队列中上拿取一半的 G 放入到自已的本地队列中，
+P1 在继续调度本地队列中的G继续执行。
+
+// runtime/proc.go
+```go
+// Finds a runnable goroutine to execute.
+// Tries to steal from other P's, get g from local or global queue, poll network.
+// tryWakeP indicates that the returned goroutine is not normal (GC worker, trace
+// reader) so the caller should try to wake a P.
+
+//查找一个可运行的goroutine来执行。
+//试图从其他P中窃取，从本地或全局队列中获取g，轮询网络。
+//tryWakeP表示返回的goroutine不正常（GC worker，trace
+//读者），因此来电者应尝试唤醒P。
+func findRunnable() (gp *g, inheritTime, tryWakeP bool) {
+	
+	...
+
+	// Check the global runnable queue once in a while to ensure fairness.
+	// Otherwise two goroutines can completely occupy the local runqueue
+	// by constantly respawning each other.
+	// 定期检查全局可运行队列以确保公平性。
+	// 否则两个 Goroutine 可能会通过不断地相互生成新任务来完全占用本地运行队列。
+
+	// schedtick 是一个计数器，它记录了处理器 P 调度任务的次数。
+	// 这行代码表示每执行 61 次本地任务后，处理器会检查一次全局队列，以防止局部的 Goroutine 执行被“饿死”。
+	if pp.schedtick%61 == 0 && sched.runqsize > 0 {
+        lock(&sched.lock)
+		// 尝试从全局队列中获取一个 Goroutine。
+		// 同时它也可能会将多个 Goroutine（最多 2 个）加入到本地队列中。这种用法一般用于周期性检查或其他情况，确保本地队列得到填充。
+        gp := globrunqget(pp, 1) 
+        unlock(&sched.lock)
+        if gp != nil {
+            return gp, false, false
+        }
+    }
+	
+	...
+
+	// local runq
+	// 从P队上获取一个G来执行
+	if gp, inheritTime := runqget(pp); gp != nil {
+        return gp, inheritTime, false
+    }
+
+    // global runq
+    if sched.runqsize != 0 {
+        lock(&sched.lock)
+		// // 尝试从全局队列中获取一个 Goroutine。
+        gp := globrunqget(pp, 0)
+        unlock(&sched.lock)
+        if gp != nil {
+            return gp, false, false
+        }
+        }
+        
+    }
+```
 
 ### 系统调用 引起阻塞
 
