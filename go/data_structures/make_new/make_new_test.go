@@ -1,6 +1,9 @@
 package make_new
 
-import "testing"
+import (
+	"reflect"
+	"testing"
+)
 
 type Person struct {
 	Name string
@@ -8,8 +11,10 @@ type Person struct {
 
 func TestMakeNew(t *testing.T) {
 	m := make(map[string]string, 5) // return Type
-	_ = m
+	t.Logf("make type: %v", reflect.TypeOf(m))
+	// make type: map[string]string
 
 	p := new(Person) // return *Type
-	_ = p
+	t.Logf("new type: %v", reflect.TypeOf(p))
+	// *make_new.Person
 }

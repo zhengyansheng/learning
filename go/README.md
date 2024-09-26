@@ -11,11 +11,11 @@
 - [ ] array 和 slice 的区别
 - [ ] slice 的扩容机制
 - [x] [map 和 sync.Map](./concurrency/syncmap/READNE.md)
-- [ ] string/array/slice 是值传递还是引用传递
+- [x] [string/array/slice/map 是值传递还是引用传递](./data_structures/value_pointer/README.md)
 - [ ] channel底层的实现
 - [ ] 堆(heap) 栈(stack)的区别
-- [ ] channel是分配在堆上还是栈上 为什么？
-- [ ] make 和 new 区别
+- [x] [channel是分配在堆上还是栈上](./data_structures/channel/README.md)
+- [x] [make 和 new](./data_structures/make_new/README.md)
 
 ## 分布式
 - [ ] 消息队列中，如何处理重复消息
