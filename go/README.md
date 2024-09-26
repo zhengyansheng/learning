@@ -10,7 +10,7 @@
 - [ ] 内存管理
 - [ ] array 和 slice 的区别
 - [ ] slice 的扩容机制
-- [ ] map 和 sync.Map 区别
+- [x] [map 和 sync.Map](./concurrency/syncmap/READNE.md)
 - [ ] string/array/slice 是值传递还是引用传递
 - [ ] channel底层的实现
 - [ ] 堆(heap) 栈(stack)的区别
