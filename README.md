@@ -1,7 +1,5 @@
 # learning
 
-> 跳转查看子目录内容
-
 - [go](./go/README.md)
 
 - [Kubernetes](./kubernetes/README.md)
@@ -12,7 +10,7 @@
 
 - [Vue](./vue/README.md)
 
-- [Chaos Engineering](./chaos_engineering/README.md)
+- [稳定性](./sre/README.md)
 
 
 
