@@ -13,7 +13,7 @@
 _**control plane**_  
 
 - etcd
-- apiserver
+- api-server
 - controller-manager
 - scheduler
 
@@ -49,6 +49,18 @@ _**network**_
 
 ---
 - HPA
+
+
+## 工具
+
+**部署**
+- kind
+- kubeadm
+
+**二次开发**
+- kubebuilder
+- operator-sdk
+
 
 
 ## argo CD
