@@ -12,6 +12,8 @@
 
 - [稳定性](./sre/README.md)
 
+- finops
+
 
 
 
