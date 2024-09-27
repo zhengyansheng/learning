@@ -1,12 +1,54 @@
 # Kubernetes
 
-## 介绍
-- [kubernetes 1.25.x 代码注解](https://github.com/zhengyansheng/kubernetes)
-- [client-go](./clients)
-- [Informer](./informers)
-- [Leader election](./leader-election)
-- [Pod原地升级](./pod-inplace-upgrade/main.go)
-- [cron hpa controller](https://github.com/AliyunContainerService/kubernetes-cronhpa-controller)
+## 基础
+- [x] [client-go](./clients)
+- [x] [Informer](./informers)
+- [x] [Leader election](./leader-election)
+- [x] [Pod原地升级](./pod-inplace-upgrade/main.go)
+- [x] [cron hpa controller](https://github.com/AliyunContainerService/kubernetes-cronhpa-controller)
+
+
+## 组件
+
+_**control plane**_  
+
+- etcd
+- apiserver
+- controller-manager
+- scheduler
+
+
+_**node**_
+
+- kube-proxy
+- kubelet
+
+_**network**_
+
+- core-dns
+- calico
+
+## 资源
+
+- Pod
+- Deployment
+- StatefulSet
+- DaemonSet
+- Cronjob
+- job
+
+---
+- EndPoint/ EndPointSlice
+- Service
+- Ingress
+
+---
+- Configmap
+- Secret
+- PV/PVC
+
+---
+- HPA
 
 
 ## argo CD
