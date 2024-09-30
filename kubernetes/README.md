@@ -7,7 +7,29 @@
 - [x] [Pod原地升级](./pod-inplace-upgrade/main.go)
 - [x] [cron hpa controller](https://github.com/AliyunContainerService/kubernetes-cronhpa-controller)
 
-## Dockerfile
+## Docker
+
+### Image
+
+[跳转到 镜像仓库](https://cr.console.aliyun.com/cn-beijing/instance/repositories)  
+
+_nginx_  
+- registry.cn-beijing.aliyuncs.com/zhengyansheng/nginx:v1.0
+- registry.cn-beijing.aliyuncs.com/zhengyansheng/nginx:v2.0
+- registry.cn-beijing.aliyuncs.com/zhengyansheng/nginx:v3.0
+- registry.cn-beijing.aliyuncs.com/zhengyansheng/nginx:stable-alpine
+
+_golang_
+- registry.cn-beijing.aliyuncs.com/zhengyansheng/golang:1.23
+
+_curl_
+- registry.cn-beijing.aliyuncs.com/zhengyansheng/curl:8.8.0
+
+_busybox_
+- registry.cn-beijing.aliyuncs.com/zhengyansheng/busybox:latest
+
+
+### Dockerfile
 - [多阶段构建](./yaml/docker/README.md)
 
 ## 组件
