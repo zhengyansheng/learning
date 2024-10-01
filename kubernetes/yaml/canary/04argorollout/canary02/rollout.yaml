@@ -1,0 +1,57 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Rollout
+metadata:
+  name: shark 
+spec:
+  replicas: 5
+  revisionHistoryLimit: 2
+  selector:
+    matchLabels:
+      app: shark
+  template:
+    metadata:
+      labels:
+        app: shark
+    spec:
+      containers:
+      - name: shark
+        image: registry.cn-beijing.aliyuncs.com/zhengyansheng/nginx:v2.0
+        #image: registry.cn-beijing.aliyuncs.com/zhengyansheng/nginx:v1.0
+        # image: argoproj/rollouts-demo:green
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 80
+  strategy:
+
+    canary:
+      # 金丝雀环境中的Service名称
+      canaryService: shark-canary
+
+      # 生产环境中的Service名称
+      stableService: shark
+
+      # 金丝雀发布时 将额外的标签添加到Pod中，以区分不同环境中的Pod
+      canaryMetadata:
+        labels:
+          deployment: canary
+      stableMetadata:
+        labels:
+          deployment: stable
+
+      # 表示使用 ingress-nginx 来管理流量
+      trafficRouting:
+        nginx:
+          stableIngress: shark  # 指定ingress名称 该ingress需要提前创建
+          additionalIngressAnnotations:       # 特定流量识别策略  
+            canary-by-header: X-Canary
+      steps:
+      - setWeight: 20
+      # The following pause step will pause the rollout indefinitely until manually resumed.
+      # Rollouts can be manually resumed by running `kubectl argo rollouts promote ROLLOUT`
+      - pause: {}
+      - setWeight: 40
+      - pause: {duration: 40s}
+      - setWeight: 60
+      - pause: {duration: 20s}
+      - setWeight: 80
+      - pause: {duration: 20s}

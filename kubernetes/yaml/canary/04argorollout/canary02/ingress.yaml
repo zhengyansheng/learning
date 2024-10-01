@@ -1,15 +1,17 @@
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
-  name: istiogateway-sample
+  name: shark 
 spec:
   rules:
-  - http:
+  - host: shark.local
+    http:
       paths:
-      - backend:
+      - path: /
+        pathType: Prefix
+        backend:
           service:
-            name: istio-ingressgateway 
+            name: shark 
             port:
               number: 80
-        path: /
-        pathType: Prefix
+

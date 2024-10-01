@@ -1,0 +1,57 @@
+apiVersion: apps.kruise.io/v1alpha1
+kind: CloneSet
+metadata:
+  labels:
+    app: nginx-cloneset
+  name: nginx-cloneset
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: nginx-cloneset
+  template:
+    metadata:
+      labels:
+        app: nginx-cloneset
+    spec:
+      containers:
+      - name: nginx-cloneset
+        image: registry.cn-beijing.aliyuncs.com/zhengyansheng/nginx:v2.0 
+  updateStrategy:
+    # ReCreate: 控制器会删除旧 Pod 和它的 PVC，然后用新版本重新创建出来。
+    # InPlaceIfPossible 控制器会优先尝试原地升级 Pod，如果不行再采用重建升级。当前， 仅支持容器镜像等字段的原地升级。
+    # InPlaceOnly: 控制器只允许采用原地升级。因此，用户只能修改容器镜像等字段，如果尝试修改其他字段会被 Kruise 拒绝。
+    type: InPlaceOnly  # ReCreate | InPlaceIfPossible
+    maxUnavailable: 1
+    maxSurge: 0
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: nginx-cloneset 
+spec:
+  type: ClusterIP
+  selector:
+    app: nginx-cloneset 
+  ports:
+    - port: 80
+      targetPort: 80
+
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: nginx-cloneset 
+spec:
+  rules:
+  - host: xxx.local 
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: nginx-cloneset 
+            port:
+              number: 80
