@@ -1,21 +1,21 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Rollout
 metadata:
-  name: rollout-canary
+  name: shark 
 spec:
   replicas: 5
   revisionHistoryLimit: 2
   selector:
     matchLabels:
-      app: rollout-canary
+      app: shark
   template:
     metadata:
       labels:
-        app: rollout-canary
+        app: shark
     spec:
       containers:
-      - name: rollouts-demo
-        image: registry.cn-beijing.aliyuncs.com/zhengyansheng/nginx:v3.0
+      - name: shark
+        image: registry.cn-beijing.aliyuncs.com/zhengyansheng/nginx:v2.0
         # image: argoproj/rollouts-demo:green
         imagePullPolicy: Always
         ports:
@@ -33,34 +33,3 @@ spec:
       - pause: {duration: 20s}
       - setWeight: 80
       - pause: {duration: 20s}
-
----
-kind: Service
-apiVersion: v1
-metadata:
-  name: rollout-canary 
-spec:
-  selector:
-    app: rollout-canary 
-  ports:
-  - protocol: TCP
-    port: 80
-    targetPort: 80
-
----
-apiVersion: networking.k8s.io/v1
-kind: Ingress
-metadata:
-  name: rollout-canary
-spec:
-  rules:
-  - host: canary.local
-    http:
-      paths:
-      - path: /
-        pathType: Prefix
-        backend:
-          service:
-            name: rollout-canary 
-            port:
-              number: 80

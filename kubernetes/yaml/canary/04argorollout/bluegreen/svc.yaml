@@ -1,0 +1,24 @@
+kind: Service
+apiVersion: v1
+metadata:
+  name: shark
+spec:
+  selector:
+    app: shark
+  ports:
+  - protocol: TCP
+    port: 80
+    targetPort: 80
+
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name: shark-canary
+spec:
+  selector:
+    app: shark
+  ports:
+  - protocol: TCP
+    port: 80
+    targetPort: 80

@@ -1,0 +1,27 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Rollout
+metadata:
+  name: shark 
+spec:
+  replicas: 5
+  selector:
+    matchLabels:
+      app: shark 
+  template:
+    metadata:
+      labels:
+        app: shark 
+    spec:
+      containers:
+      - name: shark 
+        image: registry.cn-beijing.aliyuncs.com/zhengyansheng/nginx:v1.0 
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 8080
+  strategy:
+    blueGreen: 
+      activeService: shark 
+      previewService: shark-canary
+
+      # 蓝绿切换
+      autoPromotionEnabled: true 
