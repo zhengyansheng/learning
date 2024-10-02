@@ -13,6 +13,12 @@
 
 [跳转到 镜像仓库](https://cr.console.aliyun.com/cn-beijing/instance/repositories)  
 
+_curl_
+- registry.cn-beijing.aliyuncs.com/zhengyansheng/curl:8.8.0
+
+_busybox_
+- registry.cn-beijing.aliyuncs.com/zhengyansheng/busybox:latest
+
 _nginx_  
 - registry.cn-beijing.aliyuncs.com/zhengyansheng/nginx:v1.0
 - registry.cn-beijing.aliyuncs.com/zhengyansheng/nginx:v2.0
@@ -21,12 +27,6 @@ _nginx_
 
 _golang_
 - registry.cn-beijing.aliyuncs.com/zhengyansheng/golang:1.23
-
-_curl_
-- registry.cn-beijing.aliyuncs.com/zhengyansheng/curl:8.8.0
-
-_busybox_
-- registry.cn-beijing.aliyuncs.com/zhengyansheng/busybox:latest
 
 
 ### Dockerfile
