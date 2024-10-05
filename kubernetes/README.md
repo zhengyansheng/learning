@@ -106,4 +106,10 @@ _**network**_
 
 
 
-## argo CD
+## Service mesh
+
+### istio
+> control plane
+
+### envoy 
+> data plane
