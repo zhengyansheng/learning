@@ -1,6 +1,6 @@
-static_resources:
-  listeners:
-  - name: listener_http
+resources:
+-   "@type": type.googleapis.com/envoy.config.listener.v3.Listener
+    name: listener_0
     address:
       socket_address:
         address: 0.0.0.0
@@ -10,20 +10,23 @@ static_resources:
       - name: envoy.filters.network.http_connection_manager
         typed_config:
           "@type": type.googleapis.com/envoy.extensions.filters.network.http_connection_manager.v3.HttpConnectionManager
-          stat_prefix: chapter3-1_service
+          stat_prefix: ingress_http
+          access_log:
+          - name: envoy.access_loggers.stdout
+            typed_config:
+              "@type": type.googleapis.com/envoy.extensions.access_loggers.stream.v3.StdoutAccessLog
           http_filters:
           - name: envoy.filters.http.router
             typed_config:
               "@type": type.googleapis.com/envoy.extensions.filters.http.router.v3.Router
           route_config:
-            name: my_first_route_to_nowhere
+            name: local_route
             virtual_hosts:
-            - name: dummy
-              domains: ["xxx2.local"]
+            - name: local_service
+              domains: ["*"]
               routes:
               - match:
                   prefix: "/"
-                direct_response:
-                  status: 200
-                  body:
-                    inline_string: "Bootstrap Service Mesh Implementation with Istio"
+                route:
+                  host_rewrite_literal: www.baidu.com
+                  cluster: service_envoyproxy_io

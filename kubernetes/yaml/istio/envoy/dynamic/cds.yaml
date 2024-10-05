@@ -1,0 +1,20 @@
+resources:
+-   "@type": type.googleapis.com/envoy.config.cluster.v3.Cluster
+    name: service_envoyproxy_io
+    type: LOGICAL_DNS
+    # Comment out the following line to test on v6 networks
+    dns_lookup_family: V4_ONLY
+    load_assignment:
+      cluster_name: service_envoyproxy_io
+      endpoints:
+      - lb_endpoints:
+        - endpoint:
+            address:
+              socket_address:
+                address: www.baidu.com
+                port_value: 443
+    transport_socket:
+      name: envoy.transport_sockets.tls
+      typed_config:
+        "@type": type.googleapis.com/envoy.extensions.transport_sockets.tls.v3.UpstreamTlsContext
+        sni: www.baidu.com
