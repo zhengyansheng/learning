@@ -1,0 +1,21 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: envoy
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: envoy
+  template:
+    metadata:
+      labels:
+        app: envoy
+    spec:
+      containers:
+      - name: envoy
+        image: registry.cn-beijing.aliyuncs.com/zhengyansheng/my-envoy:v0.0.2
+        ports:
+        - containerPort: 10000
+        - containerPort: 9901
+
