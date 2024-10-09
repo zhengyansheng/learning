@@ -1,0 +1,100 @@
+version: "3"
+services:
+  db:
+    image: mysql:8.0.20
+    command: --default-authentication-plugin=mysql_native_password
+    restart: always
+    container_name: db
+    privileged: true
+    environment:
+      MYSQL_ROOT_PASSWORD: root123
+      TZ: Asia/Shanghai
+    ports:
+      - 3306:3306
+    volumes:
+      - ./data/mysql:/var/lib/mysql
+      - /usr/share/zoneinfo/Asia/Shanghai:/etc/localtime
+    network_mode: "host"
+
+  emq:
+    image: emqx/emqx:5.8.0
+    restart: always
+    container_name: emqx
+    privileged: true
+    ports:
+      - 18083:18083
+      - 8081:8081
+      - 8083:8083
+      - 8084:8084
+      - 1883:1883
+    volumes:
+      #- ./data/emq/emqx.conf:/opt/emqx/etc/emqx.conf
+      - ./data/emq/plugins:/opt/emqx/etc/plugins
+
+  redis:
+    image: redis:6.0.14
+    container_name: redis
+    expose:
+      - 6379
+    volumes:
+      - ./data/redis:/data
+      - ./data/redis/redis.conf:/etc/redis/redis.conf
+    privileged: true
+    ports:
+      - 6379:6379
+    command: redis-server /etc/redis/redis.conf --appendonly yes
+
+  consulServer:
+    image: consul:1.7.4
+    container_name: consulServer
+    restart: always
+    privileged: true
+    expose:
+      - "8500"
+    ports:
+      - "8500:8500"
+      - "8600:8600"
+      - "8600:8600/udp"
+      - "8300:8300"
+      # - "8300:8300/udp"
+      - "8301:8301"
+      - "8301:8301/udp"
+      - "8400:8400"
+      - "8302:8302"
+      - "8302:8302/udp"
+    volumes:
+      - ./data/consul/data:/consul/data
+    network_mode: "host"
+    command: consul agent -server -bootstrap-expect 1 -data-dir=/consul/data -bind=127.0.0.1 -datacenter=dc1 -ui -node=s1 -client=0.0.0.0
+
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:7.5.2 
+    #image: docker.elastic.co/elasticsearch/elasticsearch:7.7.1
+    container_name: es
+    restart: always
+    ports:
+      - 9200:9200
+      - 9300:9300
+      - 9100:9100
+    environment:
+      - ES_JAVA_POTS="-Xms512m -Xmx512m"
+      - discovery.type=single-node
+      - TZ=Asia/Shanghai
+    privileged: true
+    volumes:
+      - ./data/es/data:/usr/share/elasticsearch/data
+      #- ./data/es/logs:/usr/share/elasticsearch/logs
+      #- ./data/es/plugins:/usr/share/elasticsearch/plugins
+
+  influxdb:
+    image: influxdb:1.8.0
+    container_name: influxdb
+    restart: always
+    ports:
+      - 9083:8083
+      - 8086:8086
+      - 8088:8088
+    privileged: true
+    volumes:
+      - ./data/influxdb:/var/lib/influxdb
+      #- ./data/influxdb/influxdb.conf:/etc/influxdb/influxdb.conf
