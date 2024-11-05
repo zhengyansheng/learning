@@ -27,3 +27,8 @@ _参数_
 
 # docker run -p 8080:80 spring-boot:v1.0.0
 ```
+
+## centos7
+```bash
+# docker run -it --network=host --dns 8.8.8.8  registry.cn-beijing.aliyuncs.com/zhengyansheng/centos7-with-tools:v1.0.0 /bin/bash
+```
